@@ -20,12 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.deploy.Verticle;
 
-public class UploaderServer extends Verticle implements Runnable {
+public class UploaderServer implements Runnable {
 	private static Logger log = LoggerFactory.getLogger(UploaderServer.class);
 
 	private static final long THREAD_MAIN_SLEEP_MSEC = 1000L;
@@ -50,16 +50,16 @@ public class UploaderServer extends Verticle implements Runnable {
 
 	public void start() {
 		if ((port != 0) && StringUtils.isNotEmpty(domain) && (handler != null)) {
-			vertx = Vertx.newVertx();
+			Vertx vertx = VertxFactory.newVertx();
 			server = vertx.createHttpServer();
 
 			RouteMatcher rm = new RouteMatcher();
 			rm.post("/uploader", handler);
 			rm.noMatch(new Handler<HttpServerRequest>() {
 				public void handle(HttpServerRequest req) {
-					req.response.statusCode = 404;
-					req.response.statusMessage = "Not Found";
-					req.response.end("Not Found");
+					req.response().setStatusCode(404);
+					req.response().setStatusMessage("Not Found");
+					req.response().end("Not Found");
 				}
 			});
 

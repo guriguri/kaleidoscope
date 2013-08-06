@@ -15,41 +15,76 @@
  */
 package kaleidoscopic.uploader.server;
 
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public class HttpRequestHandler implements Handler<HttpServerRequest> {
 	protected static Logger log = LoggerFactory
 			.getLogger(HttpRequestHandler.class);
 
+	private static DateFormat DIR_PATH = new SimpleDateFormat(
+			"yyyy/MM/dd/HH/mm/ss");
 	private String rootPath;
+
+	private void mkdir(String path) {
+		File file = new File(path);
+		file.mkdirs();
+	}
 
 	public void setRootPath(String rootPath) {
 		this.rootPath = rootPath;
 	}
 
 	@Override
-	public void handle(HttpServerRequest req) {
+	public void handle(final HttpServerRequest req) {
 		try {
-			req.response.statusCode = 200;
-			req.response.statusMessage = "OK";
+			req.expectMultiPart(true);
+			req.uploadHandler(new Handler<HttpServerFileUpload>() {
+				@Override
+				public void handle(final HttpServerFileUpload upload) {
+					upload.exceptionHandler(new Handler<Throwable>() {
+						@Override
+						public void handle(Throwable event) {
+							req.response().end("Upload failed");
+						}
+					});
 
-			log.info("rootPath={}, uri={}, params={}", new Object[] { rootPath,
-					req.path, req.params() });
+					upload.endHandler(new Handler<Void>() {
+						@Override
+						public void handle(Void event) {
+							req.response().end(
+									"OK, " + String.valueOf(new Date()));
+						}
+					});
 
-			req.response.end(String.valueOf(new Date()));
+					String path = rootPath + "/"
+							+ DIR_PATH.format((new Date()));
+					mkdir(path);
+					String file = path + "/" + upload.filename();
+
+					log.info("rootPath={}, uri={}, file={}, params={}",
+							new Object[] { rootPath, req.uri(), file,
+									req.params() });
+
+					upload.streamToFileSystem(file);
+				}
+			});
 		}
 		catch (Exception e) {
-			req.response.statusCode = 500;
-			req.response.statusMessage = e.getMessage();
+			req.response().setStatusCode(500);
+			req.response().setStatusMessage(e.getMessage());
 			if (e.getMessage() != null)
-				req.response.end(e.getMessage());
+				req.response().end(e.getMessage());
 			else
-				req.response.end();
+				req.response().end();
 		}
 	}
 }

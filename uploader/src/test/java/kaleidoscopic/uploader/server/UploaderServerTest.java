@@ -24,6 +24,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
@@ -43,7 +44,7 @@ public class UploaderServerTest {
 
 	@Test
 	public void test() {
-		Vertx vertx = Vertx.newVertx();
+		Vertx vertx = VertxFactory.newVertx();
 		HttpClient client = vertx.createHttpClient().setHost(domain).setPort(
 				port).setMaxPoolSize(5);
 
@@ -64,7 +65,7 @@ public class UploaderServerTest {
 		log.info(">>>>>>>>>> request");
 
 		try {
-			Thread.sleep(60000);
+			Thread.sleep(300000);
 		}
 		catch (InterruptedException e) {
 			e.printStackTrace();
