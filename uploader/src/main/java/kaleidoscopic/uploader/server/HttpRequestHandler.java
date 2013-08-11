@@ -16,7 +16,6 @@
 package kaleidoscopic.uploader.server;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -83,9 +82,9 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 						ext = upload.filename().substring(idx);
 					}
 
-					final String outfilePrefix = now.getTime() + "_"
-							+ UUID.randomUUID();
-					String filename = outfilePrefix + ext;
+					String basename = now.getTime() + "_" + UUID.randomUUID();
+					String filename = basename + ext;
+					final String outfilePrefix = path + "/" + basename;
 					final String file = path + "/" + filename;
 					String r = req.params().get("resizes");
 					if (StringUtils.isEmpty(r) == true) {
