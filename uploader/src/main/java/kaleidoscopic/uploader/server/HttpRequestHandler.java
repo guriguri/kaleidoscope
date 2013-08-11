@@ -86,11 +86,6 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 					String filename = basename + ext;
 					final String outfilePrefix = path + "/" + basename;
 					final String file = path + "/" + filename;
-					String r = req.params().get("resizes");
-					if (StringUtils.isEmpty(r) == true) {
-						r = defaultResize;
-					}
-					final String resizes = r;
 
 					upload.exceptionHandler(new Handler<Throwable>() {
 						@Override
@@ -103,6 +98,12 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 						@Override
 						public void handle(Void event) {
 							try {
+								String r = req.formAttributes().get("resizes");
+								if (StringUtils.isEmpty(r) == true) {
+									r = defaultResize;
+								}
+								String resizes = r;
+
 								Runtime runtime = Runtime.getRuntime();
 								String command = cmd + " " + file + " "
 										+ outfilePrefix + " " + outfileExt
