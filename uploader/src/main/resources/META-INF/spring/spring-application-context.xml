@@ -19,5 +19,6 @@
 		destroy-method="destroy" />
 
 	<bean id="httpRequestHandler" class="kaleidoscopic.uploader.server.HttpRequestHandler"
-		p:rootPath="${kaleidoscopic.root.path}" />
+		p:rootPath="${kaleidoscopic.root.path}" p:cmd="${kaleidoscopic.cmd}"
+		p:outfileExt="${kaleidoscopic.ext}" />
 </beans>
