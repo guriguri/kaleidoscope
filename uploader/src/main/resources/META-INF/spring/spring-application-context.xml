@@ -13,12 +13,12 @@
 		</property>
 	</bean>
 
-	<bean id="uploaderServer" class="kaleidoscopic.uploader.server.UploaderServer"
-		p:handler-ref="httpRequestHandler" p:domain="${kaleidoscopic.uploader.domain}"
-		p:port="${kaleidoscopic.uploader.port}" init-method="start"
+	<bean id="uploaderServer" class="kaleidoscope.uploader.server.UploaderServer"
+		p:handler-ref="httpRequestHandler" p:domain="${kaleidoscope.uploader.domain}"
+		p:port="${kaleidoscope.uploader.port}" init-method="start"
 		destroy-method="destroy" />
 
-	<bean id="httpRequestHandler" class="kaleidoscopic.uploader.server.HttpRequestHandler"
-		p:rootPath="${kaleidoscopic.root.path}" p:cmd="${kaleidoscopic.cmd}"
-		p:outfileExt="${kaleidoscopic.ext}" />
+	<bean id="httpRequestHandler" class="kaleidoscope.uploader.server.HttpRequestHandler"
+		p:rootPath="${kaleidoscope.root.path}" p:cmd="${kaleidoscope.cmd}"
+		p:outfileExt="${kaleidoscope.ext}" />
 </beans>
