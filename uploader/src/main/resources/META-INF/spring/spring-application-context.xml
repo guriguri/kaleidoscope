@@ -15,8 +15,7 @@
 
 	<bean id="uploaderServer" class="kaleidoscope.uploader.server.UploaderServer"
 		p:handler-ref="httpRequestHandler" p:domain="${kaleidoscope.uploader.domain}"
-		p:port="${kaleidoscope.uploader.port}" init-method="start"
-		destroy-method="destroy" />
+		p:port="${kaleidoscope.uploader.port}" p:isThreadRun="true"/>
 
 	<bean id="httpRequestHandler" class="kaleidoscope.uploader.server.HttpRequestHandler"
 		p:rootPath="${kaleidoscope.root.path}" p:cmd="${kaleidoscope.cmd}"

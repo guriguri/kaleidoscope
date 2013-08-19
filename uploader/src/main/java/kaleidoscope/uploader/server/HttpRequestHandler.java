@@ -111,20 +111,28 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 								Process process = runtime.exec(command);
 								process.waitFor();
 
-								if (log.isDebugEnabled()) {
-									log.debug("INF, cmd=[" + command
-											+ "], exitValue=["
-											+ process.exitValue() + "]");
-								}
+								log.debug("cmd=[{}], exitValue=[{}]",
+										command, process.exitValue());
+
+								req.response().end(
+										"{\"filename\":\""
+												+ file.replace(rootPath, "")
+												+ "\"}");
 							}
 							catch (Exception e) {
-								log.error("ERR, e=" + e.getMessage());
-							}
+								log.error("e={}", e.getMessage(), e);
 
-							req.response().end(
-									"{\"filename\":\""
-											+ file.replace(rootPath, "")
-											+ "\"}");
+								req.response().setStatusCode(500);
+
+								if (e.getMessage() != null) {
+									req.response().setStatusMessage(
+											e.getMessage());
+									req.response().end(e.getMessage());
+								}
+								else {
+									req.response().end();
+								}
+							}
 						}
 					});
 
@@ -137,11 +145,14 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 		}
 		catch (Exception e) {
 			req.response().setStatusCode(500);
-			req.response().setStatusMessage(e.getMessage());
-			if (e.getMessage() != null)
+
+			if (e.getMessage() != null) {
 				req.response().end(e.getMessage());
-			else
+				req.response().setStatusMessage(e.getMessage());
+			}
+			else {
 				req.response().end();
+			}
 		}
 	}
 }

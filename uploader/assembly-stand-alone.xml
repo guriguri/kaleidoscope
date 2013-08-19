@@ -22,19 +22,30 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>${project.basedir}/target/classes/META-INF/spring</directory>
+			<directory>${project.basedir}/target/classes/META-INF/spring
+			</directory>
 			<outputDirectory>conf/META-INF/spring</outputDirectory>
 			<includes>
 				<include>*.xml</include>
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>${project.basedir}/../wrapper/src/main/resources/bin</directory>
+			<directory>${project.basedir}/../wrapper/src/main/resources/bin
+			</directory>
 			<outputDirectory>bin</outputDirectory>
+			<fileMode>0755</fileMode>
 			<includes>
 				<include>**/*.*</include>
 				<include>**/*</include>
 			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}/../wrapper/src/main/resources/logs
+			</directory>
+			<outputDirectory>logs</outputDirectory>
+			<excludes>
+				<exclude>README</exclude>
+			</excludes>
 		</fileSet>
 	</fileSets>
 </assembly>

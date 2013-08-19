@@ -36,10 +36,10 @@ public class UploaderServerTest {
 	private static Logger log = LoggerFactory
 			.getLogger(UploaderServerTest.class);
 
-	@Value("${kaleidoscopic.uploader.domain}")
+	@Value("${kaleidoscope.uploader.domain}")
 	private String domain;
 
-	@Value("${kaleidoscopic.uploader.port}")
+	@Value("${kaleidoscope.uploader.port}")
 	private int port;
 
 	@Test
@@ -65,7 +65,7 @@ public class UploaderServerTest {
 		log.info(">>>>>>>>>> request");
 
 		try {
-			Thread.sleep(300000);
+			Thread.sleep(60000);
 		}
 		catch (InterruptedException e) {
 			e.printStackTrace();

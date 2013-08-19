@@ -18,6 +18,8 @@ package kaleidoscope.uploader.server;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VertxFactory;
@@ -25,7 +27,8 @@ import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 
-public class UploaderServer implements Runnable {
+public class UploaderServer implements InitializingBean, DisposableBean,
+		Runnable {
 	private static Logger log = LoggerFactory.getLogger(UploaderServer.class);
 
 	private static final long THREAD_MAIN_SLEEP_MSEC = 1000L;
@@ -33,7 +36,7 @@ public class UploaderServer implements Runnable {
 	private int port;
 	private String domain;
 	private Handler<HttpServerRequest> handler;
-	private boolean isRun = true;
+	private boolean isThreadRun = false;
 	private HttpServer server;
 
 	public void setPort(int port) {
@@ -46,6 +49,10 @@ public class UploaderServer implements Runnable {
 
 	public void setHandler(Handler<HttpServerRequest> handler) {
 		this.handler = handler;
+	}
+
+	public void setIsThreadRun(boolean isThreadRun) {
+		this.isThreadRun = isThreadRun;
 	}
 
 	public void start() {
@@ -74,22 +81,33 @@ public class UploaderServer implements Runnable {
 	}
 
 	public void destroy() {
-		isRun = false;
+		isThreadRun = false;
+
+		if (server != null) {
+			server.close();
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		start();
+
+		if (isThreadRun == true) {
+			new Thread(this).start();
+		}
 	}
 
 	@Override
 	public void run() {
-		start();
+		log.info("START Thread, tId={}", Thread.currentThread().getId());
 
-		while (isRun) {
+		while (isThreadRun) {
 			try {
 				Thread.sleep(THREAD_MAIN_SLEEP_MSEC);
 			}
 			catch (Exception e) {
-				log.error("exception", e);
+				log.error("e={}", e.getMessage(), e);
 			}
 		}
-
-		server.close();
 	}
 }
