@@ -32,7 +32,9 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 	protected static Logger log = LoggerFactory
 			.getLogger(HttpRequestHandler.class);
 
-	private static DateFormat DIR_PATH = new SimpleDateFormat("yyyy/MM/dd");
+	private static DateFormat DIR_PATH = new SimpleDateFormat(
+			"yyyy/MM/dd/HH/mm");
+	
 	private String rootPath;
 	private String cmd;
 	private String outfileExt;
@@ -77,8 +79,7 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 					int idx = upload.filename().lastIndexOf(".");
 					if (idx == -1) {
 						ext = "";
-					}
-					else {
+					} else {
 						ext = upload.filename().substring(idx);
 					}
 
@@ -111,15 +112,14 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 								Process process = runtime.exec(command);
 								process.waitFor();
 
-								log.debug("cmd=[{}], exitValue=[{}]",
-										command, process.exitValue());
+								log.debug("cmd=[{}], exitValue=[{}]", command,
+										process.exitValue());
 
 								req.response().end(
 										"{\"filename\":\""
 												+ file.replace(rootPath, "")
 												+ "\"}");
-							}
-							catch (Exception e) {
+							} catch (Exception e) {
 								log.error("e={}", e.getMessage(), e);
 
 								req.response().setStatusCode(500);
@@ -128,29 +128,26 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 									req.response().setStatusMessage(
 											e.getMessage());
 									req.response().end(e.getMessage());
-								}
-								else {
+								} else {
 									req.response().end();
 								}
 							}
 						}
 					});
 
-					log.info("uri={}, file={}, params={}", new Object[] {
-							req.uri(), file, req.params() });
+					log.info("uri={}, file={}, params={}",
+							new Object[] { req.uri(), file, req.params() });
 
 					upload.streamToFileSystem(file);
 				}
 			});
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			req.response().setStatusCode(500);
 
 			if (e.getMessage() != null) {
 				req.response().end(e.getMessage());
 				req.response().setStatusMessage(e.getMessage());
-			}
-			else {
+			} else {
 				req.response().end();
 			}
 		}
