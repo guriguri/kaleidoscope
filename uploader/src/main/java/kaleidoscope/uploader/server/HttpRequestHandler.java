@@ -34,7 +34,7 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 
 	private static DateFormat DIR_PATH = new SimpleDateFormat(
 			"yyyy/MM/dd/HH/mm");
-	
+
 	private String rootPath;
 	private String cmd;
 	private String outfileExt;
@@ -70,16 +70,15 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 				public void handle(final HttpServerFileUpload upload) {
 					Date now = new Date();
 
-					String path = rootPath + "/"
-							+ req.remoteAddress().getAddress().getHostAddress()
-							+ "/" + DIR_PATH.format(now);
+					String path = rootPath + "/" + DIR_PATH.format(now);
 					mkdir(path);
 
 					String ext = null;
 					int idx = upload.filename().lastIndexOf(".");
 					if (idx == -1) {
 						ext = "";
-					} else {
+					}
+					else {
 						ext = upload.filename().substring(idx);
 					}
 
@@ -119,7 +118,8 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 										"{\"filename\":\""
 												+ file.replace(rootPath, "")
 												+ "\"}");
-							} catch (Exception e) {
+							}
+							catch (Exception e) {
 								log.error("e={}", e.getMessage(), e);
 
 								req.response().setStatusCode(500);
@@ -128,26 +128,29 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 									req.response().setStatusMessage(
 											e.getMessage());
 									req.response().end(e.getMessage());
-								} else {
+								}
+								else {
 									req.response().end();
 								}
 							}
 						}
 					});
 
-					log.info("uri={}, file={}, params={}",
-							new Object[] { req.uri(), file, req.params() });
+					log.info("uri={}, file={}, params={}", new Object[] {
+							req.uri(), file, req.params() });
 
 					upload.streamToFileSystem(file);
 				}
 			});
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			req.response().setStatusCode(500);
 
 			if (e.getMessage() != null) {
 				req.response().end(e.getMessage());
 				req.response().setStatusMessage(e.getMessage());
-			} else {
+			}
+			else {
 				req.response().end();
 			}
 		}

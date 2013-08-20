@@ -80,6 +80,7 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 		}
 	}
 
+	@Override
 	public void destroy() {
 		isThreadRun = false;
 
