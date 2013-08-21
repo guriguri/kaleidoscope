@@ -21,12 +21,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 
 public class UploadHandler implements Handler<HttpServerFileUpload> {
 	private static Logger log = LoggerFactory.getLogger(UploadHandler.class);
@@ -39,14 +40,24 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 	private String cmd;
 	private String outfileExt;
 	private String defaultResize = "300x300";
+	private int maxUploadFileSize = 10 * 1024 * 1024;
+	private int maxThumbnailCount = 5;
 
 	public UploadHandler(HttpServerRequest req, String rootPath, String cmd,
-			String outfileExt, String defaultResize) {
+			String outfileExt, String defaultResize, int maxUploadFileSize,
+			int maxThumbnailCount) {
 		this.req = req;
 		this.rootPath = rootPath;
 		this.cmd = cmd;
 		this.outfileExt = outfileExt;
 		this.defaultResize = defaultResize;
+		this.maxUploadFileSize = maxUploadFileSize;
+		this.maxThumbnailCount = maxThumbnailCount;
+
+		System.out.println("rootPath=" + rootPath + ", cmd=" + cmd
+				+ ", outfileExt=" + outfileExt + ", defaultResize="
+				+ defaultResize + ", maxUploadFileSize=" + maxUploadFileSize
+				+ ", maxThumbnailCount=" + maxThumbnailCount);
 	}
 
 	private void mkdir(String path) {
@@ -60,7 +71,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 		int idx = filename.lastIndexOf(".");
 		if (idx == -1) {
 			ext = "";
-		} else {
+		}
+		else {
 			ext = filename.substring(idx);
 		}
 
@@ -69,14 +81,12 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 	@Override
 	public void handle(final HttpServerFileUpload upload) {
-		Date now = new Date();
-
-		String path = rootPath + "/" + DIR_PATH.format(now);
+		String path = rootPath + "/" + DIR_PATH.format(new Date());
 		mkdir(path);
 
 		String ext = getExt(upload.filename());
 
-		String basename = now.getTime() + "_" + UUID.randomUUID();
+		String basename = UUID.randomUUID().toString();
 		String filename = basename + ext;
 		final String outfilePrefix = path + "/" + basename;
 		final String file = path + "/" + filename;
@@ -92,11 +102,22 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 			@Override
 			public void handle(Void event) {
 				try {
-					String r = req.formAttributes().get("resizes");
-					if (StringUtils.isEmpty(r) == true) {
-						r = defaultResize;
+					if (upload.size() > maxUploadFileSize) {
+						throw new RuntimeException("invalid file size");
 					}
-					String resizes = r;
+
+					String resizes = req.formAttributes().get("resizes");
+					if ((resizes == null)
+							|| ((resizes = resizes.trim()).length() == 0)) {
+						resizes = defaultResize;
+					}
+
+					System.out
+							.println("1. file.size=" + file.getBytes().length);
+					String[] resizeList = resizes.split(",");
+					if (resizeList.length > maxThumbnailCount) {
+						throw new RuntimeException("invalid thumbnail count");
+					}
 
 					Runtime runtime = Runtime.getRuntime();
 					String command = cmd + " " + file + " " + outfilePrefix
@@ -104,13 +125,21 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					Process process = runtime.exec(command);
 					process.waitFor();
 
-					log.debug("cmd=[{}], exitValue=[{}]", command,
-							process.exitValue());
+					log.debug("cmd=[{}], exitValue=[{}]", command, process
+							.exitValue());
 
-					req.response().end(
-							"{\"filename\":\"" + file.replace(rootPath, "")
-									+ "\"}");
-				} catch (Exception e) {
+					JsonArray arr = new JsonArray();
+					for (int i = 0; i < resizeList.length; i++) {
+						arr.add(outfilePrefix.replaceAll(rootPath, "") + "_"
+								+ resizeList[i] + "." + outfileExt);
+					}
+
+					JsonObject json = new JsonObject().putArray("file", arr)
+							.putString("expiredDate", new Date().toString());
+
+					req.response().end(json.toString());
+				}
+				catch (Exception e) {
 					log.error("e={}", e.getMessage(), e);
 
 					req.response().setStatusCode(500);
@@ -118,16 +147,18 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					if (e.getMessage() != null) {
 						req.response().setStatusMessage(e.getMessage());
 						req.response().end(e.getMessage());
-					} else {
+					}
+					else {
 						req.response().end();
 					}
 				}
 			}
 		});
 
-		log.info("uri={}, file={}, params={}", new Object[] { req.uri(), file,
-				req.params() });
+		log.info("uri={}, file={}", req.uri(), file);
 
 		upload.streamToFileSystem(file);
+
+		System.out.println("1111. upload.size=" + upload.size());
 	}
 }

@@ -19,5 +19,7 @@
 
 	<bean id="httpRequestHandler" class="kaleidoscope.uploader.server.HttpRequestHandler"
 		p:rootPath="${kaleidoscope.root.path}" p:cmd="${kaleidoscope.cmd}"
-		p:outfileExt="${kaleidoscope.ext}" />
+		p:outfileExt="${kaleidoscope.ext}" p:defaultResize="${kaleidoscope.default.resize}"
+		p:maxUploadFileSize="${kaleidoscope.maxUploadFileSize}"
+		p:maxThumbnailCount="${kaleidoscope.maxThumbnailCount}" />
 </beans>

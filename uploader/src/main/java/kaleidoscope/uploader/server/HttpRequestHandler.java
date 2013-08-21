@@ -27,7 +27,9 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 	private String rootPath;
 	private String cmd;
 	private String outfileExt;
-	private String defaultResize = "300x300";
+	private String defaultResize;
+	private int maxUploadFileSize;
+	private int maxThumbnailCount;
 
 	public void setRootPath(String rootPath) {
 		this.rootPath = rootPath;
@@ -45,18 +47,29 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 		this.defaultResize = defaultResize;
 	}
 
+	public void setMaxUploadFileSize(int maxUploadFileSize) {
+		this.maxUploadFileSize = maxUploadFileSize;
+	}
+
+	public void setMaxThumbnailCount(int maxThumbnailCount) {
+		this.maxThumbnailCount = maxThumbnailCount;
+	}
+
 	@Override
 	public void handle(final HttpServerRequest req) {
 		try {
 			req.expectMultiPart(true);
-			req.uploadHandler(new UploadHandler(req, rootPath, cmd, outfileExt, defaultResize));
-		} catch (Exception e) {
+			req.uploadHandler(new UploadHandler(req, rootPath, cmd, outfileExt,
+					defaultResize, maxUploadFileSize, maxThumbnailCount));
+		}
+		catch (Exception e) {
 			req.response().setStatusCode(500);
 
 			if (e.getMessage() != null) {
 				req.response().end(e.getMessage());
 				req.response().setStatusMessage(e.getMessage());
-			} else {
+			}
+			else {
 				req.response().end();
 			}
 		}

@@ -59,11 +59,13 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 					rmdir(f);
 				}
 				else {
+					log.debug("delete file={}", f.getPath());
 					f.delete();
 				}
 			}
 		}
 
+		log.debug("delete file={}", file.getPath());
 		file.delete();
 	}
 
