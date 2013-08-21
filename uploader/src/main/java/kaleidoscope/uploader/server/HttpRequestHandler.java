@@ -15,35 +15,19 @@
  */
 package kaleidoscope.uploader.server;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.UUID;
-
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public class HttpRequestHandler implements Handler<HttpServerRequest> {
 	protected static Logger log = LoggerFactory
 			.getLogger(HttpRequestHandler.class);
 
-	private static DateFormat DIR_PATH = new SimpleDateFormat(
-			"yyyy/MM/dd/HH/mm");
-
 	private String rootPath;
 	private String cmd;
 	private String outfileExt;
 	private String defaultResize = "300x300";
-
-	private void mkdir(String path) {
-		File file = new File(path);
-		file.mkdirs();
-	}
 
 	public void setRootPath(String rootPath) {
 		this.rootPath = rootPath;
@@ -65,92 +49,14 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 	public void handle(final HttpServerRequest req) {
 		try {
 			req.expectMultiPart(true);
-			req.uploadHandler(new Handler<HttpServerFileUpload>() {
-				@Override
-				public void handle(final HttpServerFileUpload upload) {
-					Date now = new Date();
-
-					String path = rootPath + "/" + DIR_PATH.format(now);
-					mkdir(path);
-
-					String ext = null;
-					int idx = upload.filename().lastIndexOf(".");
-					if (idx == -1) {
-						ext = "";
-					}
-					else {
-						ext = upload.filename().substring(idx);
-					}
-
-					String basename = now.getTime() + "_" + UUID.randomUUID();
-					String filename = basename + ext;
-					final String outfilePrefix = path + "/" + basename;
-					final String file = path + "/" + filename;
-
-					upload.exceptionHandler(new Handler<Throwable>() {
-						@Override
-						public void handle(Throwable event) {
-							req.response().end("Upload failed");
-						}
-					});
-
-					upload.endHandler(new Handler<Void>() {
-						@Override
-						public void handle(Void event) {
-							try {
-								String r = req.formAttributes().get("resizes");
-								if (StringUtils.isEmpty(r) == true) {
-									r = defaultResize;
-								}
-								String resizes = r;
-
-								Runtime runtime = Runtime.getRuntime();
-								String command = cmd + " " + file + " "
-										+ outfilePrefix + " " + outfileExt
-										+ " " + resizes;
-								Process process = runtime.exec(command);
-								process.waitFor();
-
-								log.debug("cmd=[{}], exitValue=[{}]", command,
-										process.exitValue());
-
-								req.response().end(
-										"{\"filename\":\""
-												+ file.replace(rootPath, "")
-												+ "\"}");
-							}
-							catch (Exception e) {
-								log.error("e={}", e.getMessage(), e);
-
-								req.response().setStatusCode(500);
-
-								if (e.getMessage() != null) {
-									req.response().setStatusMessage(
-											e.getMessage());
-									req.response().end(e.getMessage());
-								}
-								else {
-									req.response().end();
-								}
-							}
-						}
-					});
-
-					log.info("uri={}, file={}, params={}", new Object[] {
-							req.uri(), file, req.params() });
-
-					upload.streamToFileSystem(file);
-				}
-			});
-		}
-		catch (Exception e) {
+			req.uploadHandler(new UploadHandler(req, rootPath, cmd, outfileExt, defaultResize));
+		} catch (Exception e) {
 			req.response().setStatusCode(500);
 
 			if (e.getMessage() != null) {
 				req.response().end(e.getMessage());
 				req.response().setStatusMessage(e.getMessage());
-			}
-			else {
+			} else {
 				req.response().end();
 			}
 		}
