@@ -15,8 +15,10 @@
  */
 package kaleidoscope.uploader.server;
 
-import java.io.File;
 import java.util.Calendar;
+
+import kaleidoscope.uploader.util.DateUtils;
+import kaleidoscope.uploader.util.FileUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,48 +31,21 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 	private static final long THREAD_MAIN_SLEEP_MSEC = 60000L;
 
 	private String rootPath;
-	private int expiredSec = -120;
+	private int expireSec = -120;
 	private boolean isThreadRun = false;
 
 	public void setRootPath(String rootPath) {
 		this.rootPath = rootPath;
 	}
 
-	public void setExpiredSec(int expiredSec) {
-		this.expiredSec = expiredSec;
+	public void setExpireSec(int expireSec) {
+		this.expireSec = expireSec;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		isThreadRun = true;
 		new Thread(this).start();
-	}
-
-	private void rmdir(File file) {
-		if ((file == null) || (file.exists() == false)) {
-			return;
-		}
-
-		File[] files = file.listFiles();
-
-		if (files != null) {
-			for (File f : files) {
-				if (f.isDirectory()) {
-					rmdir(f);
-				}
-				else {
-					log.debug("delete file={}", f.getPath());
-					f.delete();
-				}
-			}
-		}
-
-		log.debug("delete file={}", file.getPath());
-		file.delete();
-	}
-
-	private void rmdir(String file) {
-		rmdir(new File(file));
 	}
 
 	private class ExpiredDate {
@@ -81,8 +56,7 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 		int minute;
 
 		public ExpiredDate(int gapSec) {
-			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.SECOND, gapSec);
+			Calendar cal = DateUtils.getCalendar(gapSec);
 
 			year = cal.get(Calendar.YEAR);
 			month = cal.get(Calendar.MONTH) + 1;
@@ -115,32 +89,32 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 			StringBuffer buff = new StringBuffer();
 
 			switch (field) {
-				case Calendar.MINUTE:
-					buff.append(minute);
+			case Calendar.MINUTE:
+				buff.append(minute);
 
-					if (minute < 10) {
-						buff.insert(0, "0");
-					}
-				case Calendar.HOUR_OF_DAY:
-					buff.insert(0, hour + "/");
+				if (minute < 10) {
+					buff.insert(0, "0");
+				}
+			case Calendar.HOUR_OF_DAY:
+				buff.insert(0, hour + "/");
 
-					if (hour < 10) {
-						buff.insert(0, "0");
-					}
-				case Calendar.DAY_OF_MONTH:
-					buff.insert(0, day + "/");
+				if (hour < 10) {
+					buff.insert(0, "0");
+				}
+			case Calendar.DAY_OF_MONTH:
+				buff.insert(0, day + "/");
 
-					if (day < 10) {
-						buff.insert(0, "0");
-					}
-				case Calendar.MONTH:
-					buff.insert(0, month + "/");
+				if (day < 10) {
+					buff.insert(0, "0");
+				}
+			case Calendar.MONTH:
+				buff.insert(0, month + "/");
 
-					if (month < 10) {
-						buff.insert(0, "0");
-					}
-				case Calendar.YEAR:
-					buff.insert(0, year + "/");
+				if (month < 10) {
+					buff.insert(0, "0");
+				}
+			case Calendar.YEAR:
+				buff.insert(0, year + "/");
 			}
 
 			return buff.toString();
@@ -155,36 +129,34 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 	public void run() {
 		log.info("START Thread, tId={}", Thread.currentThread().getId());
 
-		ExpiredDate removedDate = new ExpiredDate(expiredSec);
-		rmdir(rootPath + "/" + removedDate);
+		ExpiredDate removedDate = new ExpiredDate(expireSec);
+		FileUtils.rmdir(rootPath + "/" + removedDate);
 
 		while (isThreadRun) {
 			try {
-				ExpiredDate expiredDate = new ExpiredDate(expiredSec);
+				ExpiredDate expiredDate = new ExpiredDate(expireSec);
 
 				if (expiredDate.getYear() != removedDate.getYear()) {
-					rmdir(rootPath + "/" + removedDate.toString(Calendar.YEAR));
-				}
-				else if (expiredDate.getMonth() != removedDate.getMonth()) {
-					rmdir(rootPath + "/" + removedDate.toString(Calendar.MONTH));
-				}
-				else if (expiredDate.getDay() != removedDate.getDay()) {
-					rmdir(rootPath + "/"
+					FileUtils.rmdir(rootPath + "/"
+							+ removedDate.toString(Calendar.YEAR));
+				} else if (expiredDate.getMonth() != removedDate.getMonth()) {
+					FileUtils.rmdir(rootPath + "/"
+							+ removedDate.toString(Calendar.MONTH));
+				} else if (expiredDate.getDay() != removedDate.getDay()) {
+					FileUtils.rmdir(rootPath + "/"
 							+ removedDate.toString(Calendar.DAY_OF_MONTH));
-				}
-				else if (expiredDate.getHour() != removedDate.getHour()) {
-					rmdir(rootPath + "/"
+				} else if (expiredDate.getHour() != removedDate.getHour()) {
+					FileUtils.rmdir(rootPath + "/"
 							+ removedDate.toString(Calendar.HOUR_OF_DAY));
 				}
 
 				if (expiredDate.getMinute() != removedDate.getMinute()) {
-					rmdir(rootPath + "/" + expiredDate);
+					FileUtils.rmdir(rootPath + "/" + expiredDate);
 					removedDate = expiredDate;
 				}
 
 				Thread.sleep(THREAD_MAIN_SLEEP_MSEC);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("e={}", e.getMessage(), e);
 			}
 		}

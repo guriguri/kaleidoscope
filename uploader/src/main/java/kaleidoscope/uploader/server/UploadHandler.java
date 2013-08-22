@@ -15,11 +15,14 @@
  */
 package kaleidoscope.uploader.server;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
+
+import kaleidoscope.uploader.util.DateUtils;
+import kaleidoscope.uploader.util.FileUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,10 +45,11 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 	private String defaultResize = "300x300";
 	private int maxUploadFileSize = 10 * 1024 * 1024;
 	private int maxThumbnailCount = 5;
+	private int expireSec = 120;
 
 	public UploadHandler(HttpServerRequest req, String rootPath, String cmd,
 			String outfileExt, String defaultResize, int maxUploadFileSize,
-			int maxThumbnailCount) {
+			int maxThumbnailCount, int expireSec) {
 		this.req = req;
 		this.rootPath = rootPath;
 		this.cmd = cmd;
@@ -53,38 +57,21 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 		this.defaultResize = defaultResize;
 		this.maxUploadFileSize = maxUploadFileSize;
 		this.maxThumbnailCount = maxThumbnailCount;
+		this.expireSec = -1 * expireSec;
 
 		System.out.println("rootPath=" + rootPath + ", cmd=" + cmd
 				+ ", outfileExt=" + outfileExt + ", defaultResize="
 				+ defaultResize + ", maxUploadFileSize=" + maxUploadFileSize
-				+ ", maxThumbnailCount=" + maxThumbnailCount);
-	}
-
-	private void mkdir(String path) {
-		File file = new File(path);
-		file.mkdirs();
-	}
-
-	private String getExt(String filename) {
-		String ext = null;
-
-		int idx = filename.lastIndexOf(".");
-		if (idx == -1) {
-			ext = "";
-		}
-		else {
-			ext = filename.substring(idx);
-		}
-
-		return ext;
+				+ ", maxThumbnailCount=" + maxThumbnailCount + ", expireSec="
+				+ expireSec);
 	}
 
 	@Override
 	public void handle(final HttpServerFileUpload upload) {
 		String path = rootPath + "/" + DIR_PATH.format(new Date());
-		mkdir(path);
+		FileUtils.mkdir(path);
 
-		String ext = getExt(upload.filename());
+		String ext = FileUtils.getExt(upload.filename());
 
 		String basename = UUID.randomUUID().toString();
 		String filename = basename + ext;
@@ -112,8 +99,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 						resizes = defaultResize;
 					}
 
-					System.out
-							.println("1. file.size=" + file.getBytes().length);
+					System.out.println("1. file.size=" + file.getBytes().length);
 					String[] resizeList = resizes.split(",");
 					if (resizeList.length > maxThumbnailCount) {
 						throw new RuntimeException("invalid thumbnail count");
@@ -125,8 +111,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					Process process = runtime.exec(command);
 					process.waitFor();
 
-					log.debug("cmd=[{}], exitValue=[{}]", command, process
-							.exitValue());
+					log.debug("cmd=[{}], exitValue=[{}]", command,
+							process.exitValue());
 
 					JsonArray arr = new JsonArray();
 					for (int i = 0; i < resizeList.length; i++) {
@@ -134,12 +120,13 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 								+ resizeList[i] + "." + outfileExt);
 					}
 
-					JsonObject json = new JsonObject().putArray("file", arr)
-							.putString("expiredDate", new Date().toString());
+					Calendar expireDate = DateUtils.getCalendar(expireSec);
+					expireDate.set(Calendar.SECOND, 0);
+					JsonObject json = new JsonObject().putArray("thumbnails",
+							arr).putString("expireDate", expireDate.toString());
 
 					req.response().end(json.toString());
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					log.error("e={}", e.getMessage(), e);
 
 					req.response().setStatusCode(500);
@@ -147,8 +134,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					if (e.getMessage() != null) {
 						req.response().setStatusMessage(e.getMessage());
 						req.response().end(e.getMessage());
-					}
-					else {
+					} else {
 						req.response().end();
 					}
 				}

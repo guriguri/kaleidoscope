@@ -19,7 +19,10 @@
 
 	<bean id="httpRequestHandler" class="kaleidoscope.uploader.server.HttpRequestHandler"
 		p:rootPath="${kaleidoscope.root.path}" p:cmd="${kaleidoscope.cmd}"
-		p:outfileExt="${kaleidoscope.ext}" p:defaultResize="${kaleidoscope.default.resize}"
-		p:maxUploadFileSize="${kaleidoscope.maxUploadFileSize}"
-		p:maxThumbnailCount="${kaleidoscope.maxThumbnailCount}" />
+		p:outfileExt="${kaleidoscope.outfile.ext}" p:defaultResize="${kaleidoscope.default.resize}"
+		p:maxUploadFileSize="${kaleidoscope.max.upload.file.size}"
+		p:maxThumbnailCount="${kaleidoscope.max.thumbnail.count}" p:expireSec="${kaleidoscope.expire.sec}" />
+
+	<bean id="fileRemover" class="kaleidoscope.uploader.server.FileRemover"
+		p:rootPath="${kaleidoscope.root.path}" p:expireSec="${kaleidoscope.expire.sec}" />
 </beans>
