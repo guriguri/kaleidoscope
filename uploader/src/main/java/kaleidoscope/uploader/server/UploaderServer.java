@@ -62,6 +62,8 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 
 			RouteMatcher rm = new RouteMatcher();
 			rm.post("/uploader", handler);
+			rm.get("/uploader/.*", handler);
+			rm.delete("/uploader/.*", handler);
 			rm.noMatch(new Handler<HttpServerRequest>() {
 				public void handle(HttpServerRequest req) {
 					req.response().setStatusCode(404);

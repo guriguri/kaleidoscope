@@ -99,7 +99,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 						resizes = defaultResize;
 					}
 
-					System.out.println("1. file.size=" + file.getBytes().length);
+					System.out
+							.println("1. file.size=" + file.getBytes().length);
 					String[] resizeList = resizes.split(",");
 					if (resizeList.length > maxThumbnailCount) {
 						throw new RuntimeException("invalid thumbnail count");
@@ -111,8 +112,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					Process process = runtime.exec(command);
 					process.waitFor();
 
-					log.debug("cmd=[{}], exitValue=[{}]", command,
-							process.exitValue());
+					log.debug("cmd=[{}], exitValue=[{}]", command, process
+							.exitValue());
 
 					JsonArray arr = new JsonArray();
 					for (int i = 0; i < resizeList.length; i++) {
@@ -123,10 +124,14 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					Calendar expireDate = DateUtils.getCalendar(expireSec);
 					expireDate.set(Calendar.SECOND, 0);
 					JsonObject json = new JsonObject().putArray("thumbnails",
-							arr).putString("expireDate", expireDate.toString());
+							arr).putString("expireDate",
+							expireDate.getTime().toString());
 
 					req.response().end(json.toString());
-				} catch (Exception e) {
+
+//					FileUtils.rmdir(file);
+				}
+				catch (Exception e) {
 					log.error("e={}", e.getMessage(), e);
 
 					req.response().setStatusCode(500);
@@ -134,7 +139,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					if (e.getMessage() != null) {
 						req.response().setStatusMessage(e.getMessage());
 						req.response().end(e.getMessage());
-					} else {
+					}
+					else {
 						req.response().end();
 					}
 				}
