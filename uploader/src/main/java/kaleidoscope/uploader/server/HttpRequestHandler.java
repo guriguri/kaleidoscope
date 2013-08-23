@@ -19,6 +19,8 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import kaleidoscope.uploader.util.FileUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
@@ -105,21 +107,8 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 					req.endHandler(new Handler<Void>() {
 						@Override
 						public void handle(Void event) {
-							System.out.println("Got request: " + req.uri());
-							System.out.println("Headers are: ");
-							for (Map.Entry<String, String> entry : req
-									.headers()) {
-								System.out.println(entry.getKey() + ":"
-										+ entry.getValue());
-							}
-
-							String file = req.params().get("file");
-							System.out.println("file=" + file);
-							System.out.println("query=" + req.query());
-							System.out.println("form.file="
-									+ req.formAttributes().get("file"));
-							// FileUtils.rmdir(rootPath + "/" + file);
-
+							String file = req.formAttributes().get("file");
+							FileUtils.rmdir(rootPath + "/" + file);
 							req.response().end("OK");
 						}
 					});
