@@ -46,24 +46,26 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 	private int maxUploadFileSize = 10 * 1024 * 1024;
 	private int maxThumbnailCount = 5;
 	private int expireSec = 120;
+	private String readUrl;
 
 	public UploadHandler(HttpServerRequest req, String rootPath, String cmd,
 			String outfileExt, String defaultResize, int maxUploadFileSize,
-			int maxThumbnailCount, int expireSec) {
+			int maxThumbnailCount, int expireSec, String readUrl) {
 		this.req = req;
 		this.rootPath = rootPath;
-		this.cmd = cmd;
+		this.cmd = getClass().getClassLoader().getResource(cmd).getFile();
 		this.outfileExt = outfileExt;
 		this.defaultResize = defaultResize;
 		this.maxUploadFileSize = maxUploadFileSize;
 		this.maxThumbnailCount = maxThumbnailCount;
 		this.expireSec = -1 * expireSec;
+		this.readUrl = readUrl;
 
-		System.out.println("rootPath=" + rootPath + ", cmd=" + cmd
-				+ ", outfileExt=" + outfileExt + ", defaultResize="
-				+ defaultResize + ", maxUploadFileSize=" + maxUploadFileSize
-				+ ", maxThumbnailCount=" + maxThumbnailCount + ", expireSec="
-				+ expireSec);
+		log.debug("rootPath={}, cmd={}, outfileExt={}, defaultResize={}"
+				+ ", maxUploadFileSize={}, maxThumbnailCount={}"
+				+ ", expireSec={}, readUrl={}", new Object[] { rootPath, cmd,
+				outfileExt, defaultResize, maxUploadFileSize,
+				maxThumbnailCount, expireSec, readUrl });
 	}
 
 	@Override
@@ -99,8 +101,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 						resizes = defaultResize;
 					}
 
-					System.out
-							.println("1. file.size=" + file.getBytes().length);
+					System.out.println("1. file.size=" + file.getBytes().length);
 					String[] resizeList = resizes.split(",");
 					if (resizeList.length > maxThumbnailCount) {
 						throw new RuntimeException("invalid thumbnail count");
@@ -112,12 +113,14 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					Process process = runtime.exec(command);
 					process.waitFor();
 
-					log.debug("cmd=[{}], exitValue=[{}]", command, process
-							.exitValue());
+					log.debug("cmd=[{}], exitValue=[{}]", command,
+							process.exitValue());
 
 					JsonArray arr = new JsonArray();
 					for (int i = 0; i < resizeList.length; i++) {
-						arr.add(outfilePrefix.replaceAll(rootPath, "") + "_"
+
+						arr.add(readUrl
+								+ outfilePrefix.replaceAll(rootPath, "") + "_"
 								+ resizeList[i] + "." + outfileExt);
 					}
 
@@ -129,9 +132,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 					req.response().end(json.toString());
 
-//					FileUtils.rmdir(file);
-				}
-				catch (Exception e) {
+					// FileUtils.rmdir(file);
+				} catch (Exception e) {
 					log.error("e={}", e.getMessage(), e);
 
 					req.response().setStatusCode(500);
@@ -139,8 +141,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					if (e.getMessage() != null) {
 						req.response().setStatusMessage(e.getMessage());
 						req.response().end(e.getMessage());
-					}
-					else {
+					} else {
 						req.response().end();
 					}
 				}

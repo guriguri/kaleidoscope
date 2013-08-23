@@ -38,6 +38,7 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 	private Handler<HttpServerRequest> handler;
 	private boolean isThreadRun = false;
 	private HttpServer server;
+	private String contextPath;
 
 	public void setPort(int port) {
 		this.port = port;
@@ -45,6 +46,10 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 
 	public void setDomain(String domain) {
 		this.domain = domain;
+	}
+
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
 	}
 
 	public void setHandler(Handler<HttpServerRequest> handler) {
@@ -61,9 +66,9 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 			server = vertx.createHttpServer();
 
 			RouteMatcher rm = new RouteMatcher();
-			rm.post("/uploader", handler);
-			rm.get("/uploader/.*", handler);
-			rm.delete("/uploader/.*", handler);
+			rm.post(contextPath + "/create", handler);
+			rm.get(contextPath + "/read/.*", handler);
+			rm.post(contextPath + "/delete", handler);
 			rm.noMatch(new Handler<HttpServerRequest>() {
 				public void handle(HttpServerRequest req) {
 					req.response().setStatusCode(404);
@@ -75,8 +80,7 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 			server.requestHandler(rm).listen(port, domain);
 
 			log.info("START, listening, http://{}:{}", domain, port);
-		}
-		else {
+		} else {
 			log.error("port={}, domain={}, handler.isNull={}", new Object[] {
 					port, domain, (handler == null) });
 		}
@@ -107,8 +111,7 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 		while (isThreadRun) {
 			try {
 				Thread.sleep(THREAD_MAIN_SLEEP_MSEC);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("e={}", e.getMessage(), e);
 			}
 		}

@@ -15,13 +15,15 @@
 
 	<bean id="uploaderServer" class="kaleidoscope.uploader.server.UploaderServer"
 		p:handler-ref="httpRequestHandler" p:domain="${kaleidoscope.uploader.domain}"
-		p:port="${kaleidoscope.uploader.port}" p:isThreadRun="true" />
+		p:port="${kaleidoscope.uploader.port}" p:isThreadRun="true"
+		p:contextPath="${kaleidoscope.context.path}" />
 
 	<bean id="httpRequestHandler" class="kaleidoscope.uploader.server.HttpRequestHandler"
 		p:rootPath="${kaleidoscope.root.path}" p:cmd="${kaleidoscope.cmd}"
 		p:outfileExt="${kaleidoscope.outfile.ext}" p:defaultResize="${kaleidoscope.default.resize}"
 		p:maxUploadFileSize="${kaleidoscope.max.upload.file.size}"
-		p:maxThumbnailCount="${kaleidoscope.max.thumbnail.count}" p:expireSec="${kaleidoscope.expire.sec}" />
+		p:maxThumbnailCount="${kaleidoscope.max.thumbnail.count}" p:expireSec="${kaleidoscope.expire.sec}"
+		p:contextPath="${kaleidoscope.context.path}" p:readUrl="${kaleidoscope.read.url}" />
 
 	<bean id="fileRemover" class="kaleidoscope.uploader.server.FileRemover"
 		p:rootPath="${kaleidoscope.root.path}" p:expireSec="${kaleidoscope.expire.sec}" />
