@@ -6,15 +6,14 @@
 </head>
 <body>
 	<h>썸네일 생성</h>
-	<form action="http://localhost:6487/thumbnail/create" method="post"
+	<form action="/thumbnail/create" method="post"
 		enctype="multipart/form-data" name="create">
 		choose a file to upload:<input type="file" name="myfile" /><br>
 		resizes (separator ,):<input type="text" name="resizes" /><br> <input
 			type="submit" />
 	</form>
 	<h>썸네일 삭제</h>
-	<form action="http://localhost:6487/thumbnail/delete" method="post"
-		name="delete">
+	<form action="/thumbnail/delete" method="post" name="delete">
 		file:<input type="text" name="file" /><br> <input type="submit" />
 	</form>
 </body>

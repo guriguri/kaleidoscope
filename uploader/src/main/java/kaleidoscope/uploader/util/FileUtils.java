@@ -34,7 +34,8 @@ public class FileUtils {
 			for (File f : files) {
 				if (f.isDirectory()) {
 					rmdir(f);
-				} else {
+				}
+				else {
 					log.debug("delete file={}", f.getPath());
 					f.delete();
 				}
@@ -60,10 +61,21 @@ public class FileUtils {
 		int idx = filename.lastIndexOf(".");
 		if (idx == -1) {
 			ext = "";
-		} else {
+		}
+		else {
 			ext = filename.substring(idx);
 		}
 
 		return ext;
+	}
+
+	public static boolean isExist(String filename) {
+		File file = new File(filename);
+		return file.exists();
+	}
+
+	public static long getSize(String filename) {
+		File file = new File(filename);
+		return file.length();
 	}
 }

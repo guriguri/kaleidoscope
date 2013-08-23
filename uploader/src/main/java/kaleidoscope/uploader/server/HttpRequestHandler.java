@@ -17,9 +17,9 @@ package kaleidoscope.uploader.server;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import kaleidoscope.uploader.util.FileUtils;
+import kaleidoscope.uploader.util.JsonUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 	protected static Logger log = LoggerFactory
 			.getLogger(HttpRequestHandler.class);
 
-	private File HTML_404;
+	private File HTML_INDEX;
 
 	private String rootPath;
 	private String contextPath;
@@ -46,9 +46,10 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 		super();
 
 		try {
-			HTML_404 = new File(getClass().getClassLoader()
-					.getResource("html/404.html").toURI());
-		} catch (URISyntaxException e) {
+			HTML_INDEX = new File(getClass().getClassLoader().getResource(
+					"html/index.html").toURI());
+		}
+		catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -102,36 +103,57 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 					req.uploadHandler(new UploadHandler(req, rootPath, cmd,
 							outfileExt, defaultResize, maxUploadFileSize,
 							maxThumbnailCount, expireSec, readUrl));
-				} else if (path.endsWith("delete") == true) {
+				}
+				else if (path.endsWith("delete") == true) {
 					req.expectMultiPart(true);
 					req.endHandler(new Handler<Void>() {
 						@Override
 						public void handle(Void event) {
 							String file = req.formAttributes().get("file");
 							FileUtils.rmdir(rootPath + "/" + file);
-							req.response().end("OK");
+							req.response().end(
+									JsonUtils.getJson(200).toString());
 						}
 					});
-				} else {
-					req.response().setStatusCode(404);
-					req.response().sendFile(HTML_404.getPath());
 				}
-			} else if ("get".equals(method) == true) {
-				String file = rootPath
-						+ path.replaceAll(contextPath + "/read", "");
-
-				req.response().sendFile(file, HTML_404.getPath());
-			} else {
-				req.response().setStatusCode(404);
-				req.response().sendFile(HTML_404.getPath());
+				else {
+					req.response().setStatusCode(404);
+					req.response().end(JsonUtils.getJson(404).toString());
+				}
 			}
-		} catch (Exception e) {
+			else if ("get".equals(method) == true) {
+				String file = null;
+
+				if (path.equals(contextPath) == true) {
+					file = HTML_INDEX.getPath();
+				}
+				else {
+					file = rootPath
+							+ path.replaceAll(contextPath + "/read", "");
+				}
+
+				if (FileUtils.isExist(file) == true) {
+					req.response().sendFile(file);
+				}
+				else {
+					req.response().setStatusCode(404);
+					req.response().end(JsonUtils.getJson(404).toString());
+				}
+			}
+			else {
+				req.response().setStatusCode(404);
+				req.response().end(JsonUtils.getJson(404).toString());
+			}
+		}
+		catch (Exception e) {
 			req.response().setStatusCode(500);
 
 			if (e.getMessage() != null) {
-				req.response().end(e.getMessage());
 				req.response().setStatusMessage(e.getMessage());
-			} else {
+				req.response().end(
+						JsonUtils.getJson(500, e.getMessage()).toString());
+			}
+			else {
 				req.response().end();
 			}
 		}
