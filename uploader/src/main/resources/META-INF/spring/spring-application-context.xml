@@ -26,5 +26,6 @@
 		p:contextPath="${kaleidoscope.context.path}" p:readUrl="${kaleidoscope.read.url}" />
 
 	<bean id="fileRemover" class="kaleidoscope.uploader.server.FileRemover"
-		p:rootPath="${kaleidoscope.root.path}" p:expireSec="${kaleidoscope.expire.sec}" />
+		p:rootPath="${kaleidoscope.root.path}" p:expireSec="${kaleidoscope.expire.sec}"
+		p:isThreadRun="${kaleidoscope.auto.remove}" />
 </beans>

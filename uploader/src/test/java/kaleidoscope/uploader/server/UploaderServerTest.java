@@ -42,14 +42,17 @@ public class UploaderServerTest {
 	@Value("${kaleidoscope.uploader.port}")
 	private int port;
 
+	@Value("${kaleidoscope.context.path}")
+	private String contextPath;
+
 	@Test
 	public void test() {
 		Vertx vertx = VertxFactory.newVertx();
 		HttpClient client = vertx.createHttpClient().setHost(domain).setPort(
-				port).setMaxPoolSize(5);
+				port);
 
-		final String reqUri = "/uploader";
-		HttpClientRequest request = client.post(reqUri,
+		final String reqUri = contextPath;
+		HttpClientRequest request = client.get(reqUri,
 				new Handler<HttpClientResponse>() {
 					public void handle(HttpClientResponse resp) {
 						resp.bodyHandler(new Handler<Buffer>() {

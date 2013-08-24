@@ -32,7 +32,7 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 
 	private String rootPath;
 	private int expireSec = -120;
-	private boolean isThreadRun = false;
+	private boolean isThreadRun = true;
 
 	public void setRootPath(String rootPath) {
 		this.rootPath = rootPath;
@@ -42,10 +42,15 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 		this.expireSec = expireSec;
 	}
 
+	public void setIsThreadRun(boolean isThreadRun) {
+		this.isThreadRun = isThreadRun;
+	}
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		isThreadRun = true;
-		new Thread(this).start();
+		if (isThreadRun == true) {
+			new Thread(this).start();
+		}
 	}
 
 	private class ExpiredDate {
@@ -89,32 +94,32 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 			StringBuffer buff = new StringBuffer();
 
 			switch (field) {
-			case Calendar.MINUTE:
-				buff.append(minute);
+				case Calendar.MINUTE:
+					buff.append(minute);
 
-				if (minute < 10) {
-					buff.insert(0, "0");
-				}
-			case Calendar.HOUR_OF_DAY:
-				buff.insert(0, hour + "/");
+					if (minute < 10) {
+						buff.insert(0, "0");
+					}
+				case Calendar.HOUR_OF_DAY:
+					buff.insert(0, hour + "/");
 
-				if (hour < 10) {
-					buff.insert(0, "0");
-				}
-			case Calendar.DAY_OF_MONTH:
-				buff.insert(0, day + "/");
+					if (hour < 10) {
+						buff.insert(0, "0");
+					}
+				case Calendar.DAY_OF_MONTH:
+					buff.insert(0, day + "/");
 
-				if (day < 10) {
-					buff.insert(0, "0");
-				}
-			case Calendar.MONTH:
-				buff.insert(0, month + "/");
+					if (day < 10) {
+						buff.insert(0, "0");
+					}
+				case Calendar.MONTH:
+					buff.insert(0, month + "/");
 
-				if (month < 10) {
-					buff.insert(0, "0");
-				}
-			case Calendar.YEAR:
-				buff.insert(0, year + "/");
+					if (month < 10) {
+						buff.insert(0, "0");
+					}
+				case Calendar.YEAR:
+					buff.insert(0, year + "/");
 			}
 
 			return buff.toString();
@@ -139,13 +144,16 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 				if (expiredDate.getYear() != removedDate.getYear()) {
 					FileUtils.rmdir(rootPath + "/"
 							+ removedDate.toString(Calendar.YEAR));
-				} else if (expiredDate.getMonth() != removedDate.getMonth()) {
+				}
+				else if (expiredDate.getMonth() != removedDate.getMonth()) {
 					FileUtils.rmdir(rootPath + "/"
 							+ removedDate.toString(Calendar.MONTH));
-				} else if (expiredDate.getDay() != removedDate.getDay()) {
+				}
+				else if (expiredDate.getDay() != removedDate.getDay()) {
 					FileUtils.rmdir(rootPath + "/"
 							+ removedDate.toString(Calendar.DAY_OF_MONTH));
-				} else if (expiredDate.getHour() != removedDate.getHour()) {
+				}
+				else if (expiredDate.getHour() != removedDate.getHour()) {
 					FileUtils.rmdir(rootPath + "/"
 							+ removedDate.toString(Calendar.HOUR_OF_DAY));
 				}
@@ -156,7 +164,8 @@ public class FileRemover implements InitializingBean, DisposableBean, Runnable {
 				}
 
 				Thread.sleep(THREAD_MAIN_SLEEP_MSEC);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error("e={}", e.getMessage(), e);
 			}
 		}
