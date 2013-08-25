@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package kaleidoscope.uploader.server;
+package kaleidoscope.server;
 
 import java.io.File;
 import java.net.URISyntaxException;
 
-import kaleidoscope.uploader.util.FileUtils;
-import kaleidoscope.uploader.util.JsonUtils;
+import kaleidoscope.util.FileUtils;
+import kaleidoscope.util.JsonUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -50,11 +50,10 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 		try {
 			HTML_INDEX = new File(getClass().getClassLoader().getResource(
 					"html/index.html").toURI());
-			REGEX_THUMBNAIL_URI = "/[0-9a-f/-]+[.][a-z]+";
+			REGEX_THUMBNAIL_URI = "/[0-9a-fx/_-]+[.][a-z]+";
 		}
 		catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("e={}", e.getMessage(), e);
 		}
 	}
 
@@ -115,13 +114,15 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 							String file = req.formAttributes().get("file");
 							if (StringUtils.isEmpty(file) == true) {
 								req.response().end(
-										JsonUtils.getJson(500, "invalid file")
+										JsonUtils.getJson(500,
+												"invalid file, file=" + file)
 												.toString());
 							}
 							else if ((file = file.replaceAll(readUrl, ""))
 									.matches(REGEX_THUMBNAIL_URI) != true) {
 								req.response().end(
-										JsonUtils.getJson(500, "invalid file")
+										JsonUtils.getJson(500,
+												"invalid file, file=" + file)
 												.toString());
 							}
 							else {

@@ -1,4 +1,4 @@
-package kaleidoscope.uploader.wrapper;
+package kaleidoscope.wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,16 +29,18 @@ public class StartStopMain {
 			}
 
 			start(conf);
-		} else if ("stop".equalsIgnoreCase(method) == true) {
+		}
+		else if ("stop".equalsIgnoreCase(method) == true) {
 			stop();
-		} else {
+		}
+		else {
 			log.error("Usage (start|stop) [configure.xml]\n");
 			System.exit(1);
 		}
 	}
 
 	public static void start(String conf) throws Exception {
-		System.out.println("call start()");
+		log.debug("call start()");
 
 		applicationContext = new ClassPathXmlApplicationContext(
 				new String[] { conf });
@@ -46,7 +48,7 @@ public class StartStopMain {
 	}
 
 	public static void stop() {
-		System.out.println("call stop()");
+		log.debug("call stop()");
 
 		applicationContext.close();
 	}

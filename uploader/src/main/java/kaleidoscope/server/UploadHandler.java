@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package kaleidoscope.uploader.server;
+package kaleidoscope.server;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -21,9 +21,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
-import kaleidoscope.uploader.util.DateUtils;
-import kaleidoscope.uploader.util.FileUtils;
-import kaleidoscope.uploader.util.JsonUtils;
+import kaleidoscope.util.DateUtils;
+import kaleidoscope.util.FileUtils;
+import kaleidoscope.util.JsonUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

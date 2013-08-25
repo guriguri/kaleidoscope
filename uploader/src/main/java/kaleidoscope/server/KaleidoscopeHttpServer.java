@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package kaleidoscope.uploader.server;
+package kaleidoscope.server;
 
-import kaleidoscope.uploader.util.JsonUtils;
+import kaleidoscope.util.JsonUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -29,9 +29,10 @@ import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 
-public class UploaderServer implements InitializingBean, DisposableBean,
-		Runnable {
-	private static Logger log = LoggerFactory.getLogger(UploaderServer.class);
+public class KaleidoscopeHttpServer implements InitializingBean,
+		DisposableBean, Runnable {
+	private static Logger log = LoggerFactory
+			.getLogger(KaleidoscopeHttpServer.class);
 
 	private static final long THREAD_MAIN_SLEEP_MSEC = 1000L;
 
@@ -63,7 +64,7 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 	}
 
 	public void start() {
-		if ((port != 0) && StringUtils.isNotEmpty(domain) && (handler != null)) {
+		if ((port != 0) && (handler != null)) {
 			Vertx vertx = VertxFactory.newVertx();
 			server = vertx.createHttpServer();
 
@@ -79,13 +80,17 @@ public class UploaderServer implements InitializingBean, DisposableBean,
 				}
 			});
 
-			server.requestHandler(rm).listen(port, domain);
-
-			log.info("START, listening, http://{}:{}", domain, port);
+			if (StringUtils.isEmpty(domain) == true) {
+				server.requestHandler(rm).listen(port);
+				log.info("START, listening, http://0.0.0.0:{}", port);
+			}
+			else {
+				server.requestHandler(rm).listen(port, domain);
+				log.info("START, listening, http://{}:{}", domain, port);
+			}
 		}
 		else {
-			log.error("port={}, domain={}, handler.isNull={}", new Object[] {
-					port, domain, (handler == null) });
+			log.error("port={}, handler.isNull={}", port, (handler == null));
 		}
 	}
 

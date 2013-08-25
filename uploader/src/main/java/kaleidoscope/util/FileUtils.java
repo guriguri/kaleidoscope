@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package kaleidoscope.uploader.util;
+package kaleidoscope.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,5 +80,45 @@ public class FileUtils {
 	public static long getSize(String filename) {
 		File file = new File(filename);
 		return file.length();
+	}
+
+	public static byte[] read(InputStream is) throws Exception {
+		byte[] data = null;
+
+		byte[] buff = new byte[1024];
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		try {
+			for (int readLength = 0; (readLength = is.read(buff)) > 0;) {
+				baos.write(buff, 0, readLength);
+			}
+
+			data = baos.toByteArray();
+		}
+		finally {
+			baos.close();
+		}
+
+		return data;
+	}
+
+	public static byte[] read(File file) throws Exception {
+		byte[] data = null;
+
+		if ((file.exists() == true) && (file.isDirectory() != true)) {
+			InputStream in = null;
+
+			try {
+				in = new FileInputStream(file);
+				data = read(in);
+			}
+			finally {
+				if (in != null) {
+					in.close();
+				}
+			}
+		}
+
+		return data;
 	}
 }

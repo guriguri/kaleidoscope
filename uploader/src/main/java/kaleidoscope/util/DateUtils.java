@@ -13,32 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package kaleidoscope.uploader.util;
+package kaleidoscope.util;
 
-import org.vertx.java.core.json.JsonObject;
+import java.util.Calendar;
 
-public class JsonUtils {
-	public static JsonObject getJson(int code, String msg) {
-		JsonObject json = new JsonObject().putNumber("result", code).putString(
-				"msg", msg);
+public class DateUtils {
+	public static Calendar getCalendar(int gapSec) {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.SECOND, gapSec);
 
-		return json;
-	}
-
-	public static JsonObject getJson(int code) {
-		String msg = null;
-
-		switch (code) {
-			case 200:
-				msg = "success";
-				break;
-			case 404:
-				msg = "not found";
-				break;
-			default:
-				msg = "unknown error";
-		}
-
-		return getJson(code, msg);
+		return cal;
 	}
 }
