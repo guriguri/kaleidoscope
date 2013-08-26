@@ -15,9 +15,16 @@
  */
 package kaleidoscope.util;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class DateUtils {
+	public static DateFormat DATE_FORMAT_YYYYMMDDHHMI = new SimpleDateFormat(
+			"yyyy/MM/dd/HH/mm");
+	public static DateFormat DATE_FORMAT_ISO8601FMT = new SimpleDateFormat(
+			"yyyy-MM-dd'T'HH:mm:ssZ");
+
 	public static Calendar getCalendar(int gapSec) {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.SECOND, gapSec);

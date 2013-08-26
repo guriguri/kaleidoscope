@@ -79,8 +79,8 @@ public class KaleidoscopeHttpServerTest {
 
 	private void create() {
 		Vertx vertx = VertxFactory.newVertx();
-		HttpClient client = vertx.createHttpClient().setHost(domain).setPort(
-				port);
+		HttpClient client = vertx.createHttpClient().setHost(domain)
+				.setPort(port);
 		HttpClientRequest req = client.post(contextPath + "/create",
 				new Handler<HttpClientResponse>() {
 					@Override
@@ -104,8 +104,7 @@ public class KaleidoscopeHttpServerTest {
 		Buffer buffer = new Buffer();
 
 		buffer.appendString("--" + boundary + "\r\n");
-		buffer.appendString("Content-Disposition: form-data; name=\"resizes\";\r\n");
-		buffer.appendString("Content-Type: text/plain; charset=UTF-8\r\n\r\n");
+		buffer.appendString("Content-Disposition: form-data; name=\"resizes\"\r\n");
 		buffer.appendString("10x10\r\n");
 
 		buffer.appendString("--" + boundary + "\r\n");
@@ -122,8 +121,7 @@ public class KaleidoscopeHttpServerTest {
 
 		try {
 			Thread.sleep(THREAD_SLEEP_MSEC);
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 
@@ -132,8 +130,8 @@ public class KaleidoscopeHttpServerTest {
 
 	private void read(JsonArray arr) {
 		Vertx vertx = VertxFactory.newVertx();
-		HttpClient client = vertx.createHttpClient().setHost(domain).setPort(
-				port);
+		HttpClient client = vertx.createHttpClient().setHost(domain)
+				.setPort(port);
 
 		for (final Object reqUrl : arr) {
 			HttpClientRequest request = client.get((String) reqUrl,
@@ -151,14 +149,14 @@ public class KaleidoscopeHttpServerTest {
 
 							resp.endHandler(new VoidHandler() {
 								public void handle() {
-									Assert.assertEquals(content.length, buff
-											.length());
+									Assert.assertEquals(content.length,
+											buff.length());
 									for (int i = 0, size = content.length; i < size; i++) {
-										Assert.assertEquals(content[i], buff
-												.getByte(i));
+										Assert.assertEquals(content[i],
+												buff.getByte(i));
 									}
 
-									// delete((String) reqUrl);
+									delete((String) reqUrl);
 								}
 							}
 
@@ -171,8 +169,7 @@ public class KaleidoscopeHttpServerTest {
 
 		try {
 			Thread.sleep(THREAD_SLEEP_MSEC);
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 
@@ -181,8 +178,8 @@ public class KaleidoscopeHttpServerTest {
 
 	private void delete(final String url) {
 		Vertx vertx = VertxFactory.newVertx();
-		HttpClient client = vertx.createHttpClient().setHost(domain).setPort(
-				port);
+		HttpClient client = vertx.createHttpClient().setHost(domain)
+				.setPort(port);
 
 		final String reqUrl = contextPath + "/delete";
 		HttpClientRequest request = client.post(reqUrl,
@@ -208,8 +205,7 @@ public class KaleidoscopeHttpServerTest {
 
 		try {
 			Thread.sleep(THREAD_SLEEP_MSEC);
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 

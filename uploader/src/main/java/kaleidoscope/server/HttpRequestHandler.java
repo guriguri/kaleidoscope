@@ -17,6 +17,7 @@ package kaleidoscope.server;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import kaleidoscope.util.FileUtils;
 import kaleidoscope.util.JsonUtils;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 public class HttpRequestHandler implements Handler<HttpServerRequest> {
 	protected static Logger log = LoggerFactory
@@ -48,11 +50,10 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 		super();
 
 		try {
-			HTML_INDEX = new File(getClass().getClassLoader().getResource(
-					"html/index.html").toURI());
+			HTML_INDEX = new File(getClass().getClassLoader()
+					.getResource("html/index.html").toURI());
 			REGEX_THUMBNAIL_URI = "/[0-9a-fx/_-]+[.][a-z]+";
-		}
-		catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			log.error("e={}", e.getMessage(), e);
 		}
 	}
@@ -93,86 +94,106 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 		this.readUrl = readUrl;
 	}
 
+	public static void requestEnd(HttpServerRequest req, int code, Object obj,
+			boolean isOnlyLog) {
+		if (req == null) {
+			log.error("req is null");
+			return;
+		}
+
+		String json = null;
+		String method = req.method().toLowerCase();
+		String query = "";
+
+		if (obj == null) {
+			json = JsonUtils.getJson(code).toString();
+		} else if (obj instanceof String) {
+			json = JsonUtils.getJson(code, (String) obj).toString();
+		} else if (obj instanceof JsonObject) {
+			json = obj.toString();
+		}
+
+		if ("get".equals(method) == true) {
+			if (StringUtils.isEmpty(req.query()) != true) {
+				query = req.query();
+			}
+		} else if (req.formAttributes() != null) {
+			for (Map.Entry<String, String> entry : req.formAttributes()) {
+				query += entry.getKey() + "=" + entry.getValue() + "&";
+			}
+		}
+
+		log.info("uri={}?{}, json={}", new Object[] { req.uri(), query, json });
+
+		if (isOnlyLog != true) {
+			req.response().setStatusCode(code);
+			req.response().end(json);
+		}
+	}
+
+	public static void requestEnd(HttpServerRequest req, int code, Object obj) {
+		requestEnd(req, code, obj, false);
+	}
+
+	public static void requestEnd(HttpServerRequest req, int code) {
+		requestEnd(req, code, null);
+	}
+
 	@Override
 	public void handle(final HttpServerRequest req) {
-		try {
-			String method = req.method().toLowerCase();
-			String path = req.path();
+		String method = req.method().toLowerCase();
+		String path = req.path();
 
+		try {
 			if ("post".equals(method) == true) {
 				if (path.endsWith("create") == true) {
 					req.expectMultiPart(true);
 					req.uploadHandler(new UploadHandler(req, rootPath, cmd,
 							outfileExt, defaultResize, maxUploadFileSize,
 							maxThumbnailCount, expireSec, readUrl));
-				}
-				else if (path.endsWith("delete") == true) {
+				} else if (path.endsWith("delete") == true) {
 					req.expectMultiPart(true);
 					req.endHandler(new Handler<Void>() {
 						@Override
 						public void handle(Void event) {
 							String file = req.formAttributes().get("file");
 							if (StringUtils.isEmpty(file) == true) {
-								req.response().end(
-										JsonUtils.getJson(500,
-												"invalid file, file=" + file)
-												.toString());
-							}
-							else if ((file = file.replaceAll(readUrl, ""))
+								requestEnd(req, 500,
+										"invalid file, file is empty");
+							} else if ((file = file.replaceAll(readUrl, ""))
 									.matches(REGEX_THUMBNAIL_URI) != true) {
-								req.response().end(
-										JsonUtils.getJson(500,
-												"invalid file, file=" + file)
-												.toString());
-							}
-							else {
+								requestEnd(req, 500, "invalid file, file="
+										+ file);
+							} else {
 								FileUtils.rmdir(rootPath + "/" + file);
-								req.response().end(
-										JsonUtils.getJson(200).toString());
+								requestEnd(req, 200);
 							}
 						}
 					});
+				} else {
+					requestEnd(req, 404);
 				}
-				else {
-					req.response().setStatusCode(404);
-					req.response().end(JsonUtils.getJson(404).toString());
-				}
-			}
-			else if ("get".equals(method) == true) {
+			} else if ("get".equals(method) == true) {
 				String file = null;
 
 				if (path.equals(contextPath) == true) {
 					file = HTML_INDEX.getPath();
-				}
-				else {
+				} else {
 					file = rootPath
 							+ path.replaceAll(contextPath + "/read", "");
 				}
 
 				if (FileUtils.isExist(file) == true) {
 					req.response().sendFile(file);
+					requestEnd(req, 200, "success", true);
+				} else {
+					requestEnd(req, 404);
 				}
-				else {
-					req.response().setStatusCode(404);
-					req.response().end(JsonUtils.getJson(404).toString());
-				}
+			} else {
+				requestEnd(req, 404);
 			}
-			else {
-				req.response().setStatusCode(404);
-				req.response().end(JsonUtils.getJson(404).toString());
-			}
-		}
-		catch (Exception e) {
-			req.response().setStatusCode(500);
-
-			if (e.getMessage() != null) {
-				req.response().setStatusMessage(e.getMessage());
-				req.response().end(
-						JsonUtils.getJson(500, e.getMessage()).toString());
-			}
-			else {
-				req.response().end();
-			}
+		} catch (Exception e) {
+			requestEnd(req, 500, e.getMessage());
 		}
 	}
 }

@@ -15,8 +15,8 @@
  */
 package kaleidoscope.server;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -25,6 +25,7 @@ import kaleidoscope.util.DateUtils;
 import kaleidoscope.util.FileUtils;
 import kaleidoscope.util.JsonUtils;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
@@ -35,10 +36,6 @@ import org.vertx.java.core.json.JsonObject;
 
 public class UploadHandler implements Handler<HttpServerFileUpload> {
 	private static Logger log = LoggerFactory.getLogger(UploadHandler.class);
-	private static DateFormat DIR_PATH = new SimpleDateFormat(
-			"yyyy/MM/dd/HH/mm");
-	private static DateFormat EXPIRE_DATE = new SimpleDateFormat(
-			"yyyy/MM/dd HH:mm:ss");
 
 	private HttpServerRequest req;
 
@@ -53,10 +50,13 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 	public UploadHandler(HttpServerRequest req, String rootPath, String cmd,
 			String outfileExt, String defaultResize, int maxUploadFileSize,
-			int maxThumbnailCount, int expireSec, String readUrl) {
+			int maxThumbnailCount, int expireSec, String readUrl)
+			throws URISyntaxException {
 		this.req = req;
 		this.rootPath = rootPath;
-		this.cmd = getClass().getClassLoader().getResource(cmd).getFile();
+		this.cmd = Paths.get(
+				getClass().getClassLoader().getResource(cmd).toURI())
+				.toString();
 		this.outfileExt = outfileExt;
 		this.defaultResize = defaultResize;
 		this.maxUploadFileSize = maxUploadFileSize;
@@ -66,14 +66,20 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 		log.debug("rootPath={}, cmd={}, outfileExt={}, defaultResize={}"
 				+ ", maxUploadFileSize={}, maxThumbnailCount={}"
-				+ ", expireSec={}, readUrl={}", new Object[] { rootPath, cmd,
-				outfileExt, defaultResize, maxUploadFileSize,
+				+ ", expireSec={}, readUrl={}", new Object[] { rootPath,
+				this.cmd, outfileExt, defaultResize, maxUploadFileSize,
 				maxThumbnailCount, expireSec, readUrl });
 	}
 
 	@Override
 	public void handle(final HttpServerFileUpload upload) {
-		String path = rootPath + "/" + DIR_PATH.format(new Date());
+		if (StringUtils.isEmpty(upload.filename()) == true) {
+			HttpRequestHandler.requestEnd(req, 500, "need to file");
+			return;
+		}
+
+		String path = rootPath + "/"
+				+ DateUtils.DATE_FORMAT_YYYYMMDDHHMI.format(new Date());
 		FileUtils.mkdir(path);
 
 		String ext = FileUtils.getExt(upload.filename());
@@ -86,25 +92,27 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 		upload.exceptionHandler(new Handler<Throwable>() {
 			@Override
 			public void handle(Throwable event) {
-				req.response().end(
-						JsonUtils.getJson(500, event.getMessage()).toString());
+				HttpRequestHandler.requestEnd(req, 500, event.getMessage());
 			}
 		});
 
 		upload.endHandler(new Handler<Void>() {
 			@Override
 			public void handle(Void event) {
-				try {
-					if ((upload.filename() == null)
-							|| (upload.filename().isEmpty() == true)) {
-						throw new RuntimeException("need to file");
-					}
-					else if (FileUtils.getSize(file) > maxUploadFileSize) {
-						throw new RuntimeException(
-								"The file's size is limited to "
-										+ maxUploadFileSize);
-					}
+				if (FileUtils.getSize(file) > maxUploadFileSize) {
+					HttpRequestHandler.requestEnd(req, 500,
+							"The file's size is limited to "
+									+ maxUploadFileSize);
+				}
+			}
+		});
 
+		upload.streamToFileSystem(file);
+
+		req.endHandler(new Handler<Void>() {
+			@Override
+			public void handle(Void event) {
+				try {
 					String resizes = req.formAttributes().get("resizes");
 					if ((resizes == null)
 							|| ((resizes = resizes.trim()).length() == 0)) {
@@ -113,19 +121,21 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 					String[] resizeList = resizes.split(",");
 					if (resizeList.length > maxThumbnailCount) {
-						throw new RuntimeException(
+						HttpRequestHandler.requestEnd(req, 500,
 								"The thumbnails is limited to "
 										+ maxThumbnailCount);
+						return;
 					}
 
 					Runtime runtime = Runtime.getRuntime();
-					String command = cmd + " " + file + " " + outfilePrefix
-							+ " " + outfileExt + " " + resizes;
+					String command = cmd + " " + Paths.get(file) + " "
+							+ Paths.get(outfilePrefix) + " " + outfileExt + " "
+							+ resizes;
 					Process process = runtime.exec(command);
 					process.waitFor();
 
-					log.debug("cmd=[{}], exitValue=[{}]", command, process
-							.exitValue());
+					log.debug("cmd=[{}], exitValue=[{}]", command,
+							process.exitValue());
 
 					JsonArray arr = new JsonArray();
 					for (int i = 0; i < resizeList.length; i++) {
@@ -136,35 +146,22 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 					Calendar expireDate = DateUtils.getCalendar(expireSec);
 					expireDate.set(Calendar.SECOND, 0);
-					JsonObject json = JsonUtils.getJson(200, "success")
-							.putArray("thumbnails", arr).putString(
+					JsonObject json = JsonUtils
+							.getJson(200, "success")
+							.putArray("thumbnails", arr)
+							.putString(
 									"expireDate",
-									EXPIRE_DATE.format(expireDate.getTime()));
+									DateUtils.DATE_FORMAT_ISO8601FMT
+											.format(expireDate.getTime()));
 
-					req.response().end(json.toString());
+					HttpRequestHandler.requestEnd(req, 200, json);
 
 					FileUtils.rmdir(file);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					log.error("e={}", e.getMessage(), e);
-
-					req.response().setStatusCode(500);
-
-					if (e.getMessage() != null) {
-						req.response().setStatusMessage(e.getMessage());
-						req.response().end(
-								JsonUtils.getJson(500, e.getMessage())
-										.toString());
-					}
-					else {
-						req.response().end();
-					}
+					HttpRequestHandler.requestEnd(req, 500, e.getMessage());
 				}
 			}
 		});
-
-		log.info("uri={}, file={}", req.uri(), file);
-
-		upload.streamToFileSystem(file);
 	}
 }
