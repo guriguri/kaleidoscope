@@ -7,14 +7,15 @@
 </head>
 <body>
 	<h>썸네일 생성</h>
-	<form action="/thumbnail/create" method="post"
+	<form action="/kaleidoscope/create" method="post"
 		enctype="multipart/form-data" name="create">
 		choose a file to upload:<input type="file" name="file" /><br>
 		resizes (separator ,):<input type="text" name="resizes" /><br> <input
 			type="submit" />
 	</form>
+	<br/><br/>
 	<h>썸네일 삭제</h>
-	<form action="/thumbnail/delete" method="post" name="delete">
+	<form action="/kaleidoscope/delete" method="post" name="delete">
 		file:<input type="text" name="file" /><br> <input type="submit" />
 	</form>
 </body>

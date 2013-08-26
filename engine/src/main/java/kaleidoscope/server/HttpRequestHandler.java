@@ -16,7 +16,6 @@
 package kaleidoscope.server;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 import kaleidoscope.util.FileUtils;
@@ -50,10 +49,12 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 		super();
 
 		try {
-			HTML_INDEX = new File(getClass().getClassLoader()
-					.getResource("html/index.html").toURI());
+			HTML_INDEX = new File(getClass().getClassLoader().getResource(
+					"html/index.html").toURI());
 			REGEX_THUMBNAIL_URI = "/[0-9a-fx/_-]+[.][a-z]+";
-		} catch (URISyntaxException e) {
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 			log.error("e={}", e.getMessage(), e);
 		}
 	}
@@ -107,9 +108,11 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 
 		if (obj == null) {
 			json = JsonUtils.getJson(code).toString();
-		} else if (obj instanceof String) {
+		}
+		else if (obj instanceof String) {
 			json = JsonUtils.getJson(code, (String) obj).toString();
-		} else if (obj instanceof JsonObject) {
+		}
+		else if (obj instanceof JsonObject) {
 			json = obj.toString();
 		}
 
@@ -117,7 +120,8 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 			if (StringUtils.isEmpty(req.query()) != true) {
 				query = req.query();
 			}
-		} else if (req.formAttributes() != null) {
+		}
+		else if (req.formAttributes() != null) {
 			for (Map.Entry<String, String> entry : req.formAttributes()) {
 				query += entry.getKey() + "=" + entry.getValue() + "&";
 			}
@@ -151,7 +155,8 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 					req.uploadHandler(new UploadHandler(req, rootPath, cmd,
 							outfileExt, defaultResize, maxUploadFileSize,
 							maxThumbnailCount, expireSec, readUrl));
-				} else if (path.endsWith("delete") == true) {
+				}
+				else if (path.endsWith("delete") == true) {
 					req.expectMultiPart(true);
 					req.endHandler(new Handler<Void>() {
 						@Override
@@ -160,25 +165,30 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 							if (StringUtils.isEmpty(file) == true) {
 								requestEnd(req, 500,
 										"invalid file, file is empty");
-							} else if ((file = file.replaceAll(readUrl, ""))
+							}
+							else if ((file = file.replaceAll(readUrl, ""))
 									.matches(REGEX_THUMBNAIL_URI) != true) {
 								requestEnd(req, 500, "invalid file, file="
 										+ file);
-							} else {
+							}
+							else {
 								FileUtils.rmdir(rootPath + "/" + file);
 								requestEnd(req, 200);
 							}
 						}
 					});
-				} else {
+				}
+				else {
 					requestEnd(req, 404);
 				}
-			} else if ("get".equals(method) == true) {
+			}
+			else if ("get".equals(method) == true) {
 				String file = null;
 
 				if (path.equals(contextPath) == true) {
 					file = HTML_INDEX.getPath();
-				} else {
+				}
+				else {
 					file = rootPath
 							+ path.replaceAll(contextPath + "/read", "");
 				}
@@ -186,13 +196,16 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 				if (FileUtils.isExist(file) == true) {
 					req.response().sendFile(file);
 					requestEnd(req, 200, "success", true);
-				} else {
+				}
+				else {
 					requestEnd(req, 404);
 				}
-			} else {
+			}
+			else {
 				requestEnd(req, 404);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			requestEnd(req, 500, e.getMessage());
 		}
 	}

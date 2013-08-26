@@ -30,6 +30,21 @@
 			</includes>
 		</fileSet>
 		<fileSet>
+			<directory>${project.basedir}/target/classes/html</directory>
+			<outputDirectory>html</outputDirectory>
+			<includes>
+				<include>*.*</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}/target/classes/script</directory>
+			<outputDirectory>script</outputDirectory>
+			<fileMode>0755</fileMode>
+			<includes>
+				<include>*.*</include>
+			</includes>
+		</fileSet>
+		<fileSet>
 			<directory>${project.basedir}/../wrapper/src/main/resources/bin
 			</directory>
 			<outputDirectory>bin</outputDirectory>

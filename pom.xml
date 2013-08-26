@@ -9,7 +9,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>uploader</module>
+		<module>engine</module>
 	</modules>
 
 	<properties>
@@ -98,7 +98,9 @@
 							<exclude>**/bin/**/*.*</exclude>
 							<exclude>**/bin/**/*</exclude>
 							<exclude>*.xml</exclude>
-							<exclude>**/*.properties</exclude>
+							<exclude>**/html/*.*</exclude>
+							<exclude>**/script/*.*</exclude>
+							<exclude>**/wrapper.conf</exclude>
 						</excludes>
 					</configuration>
 					<executions>
