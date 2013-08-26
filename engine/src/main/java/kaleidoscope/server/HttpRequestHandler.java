@@ -185,7 +185,8 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 			else if ("get".equals(method) == true) {
 				String file = null;
 
-				if (path.equals(contextPath) == true) {
+				if ((path.equals("/") == true)
+						|| (path.equals(contextPath) == true)) {
 					file = HTML_INDEX.getPath();
 				}
 				else {

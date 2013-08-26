@@ -70,6 +70,7 @@ public class KaleidoscopeHttpServer implements InitializingBean,
 
 			RouteMatcher rm = new RouteMatcher();
 			rm.post(contextPath + "/create", handler);
+			rm.get("/", handler);
 			rm.get(contextPath, handler);
 			rm.get(contextPath + "/read/.*", handler);
 			rm.post(contextPath + "/delete", handler);
