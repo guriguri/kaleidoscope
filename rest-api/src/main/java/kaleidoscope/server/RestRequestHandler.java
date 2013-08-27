@@ -28,9 +28,9 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
-public class HttpRequestHandler implements Handler<HttpServerRequest> {
+public class RestRequestHandler implements Handler<HttpServerRequest> {
 	protected static Logger log = LoggerFactory
-			.getLogger(HttpRequestHandler.class);
+			.getLogger(RestRequestHandler.class);
 
 	private File HTML_INDEX;
 	private String REGEX_THUMBNAIL_URI;
@@ -45,7 +45,7 @@ public class HttpRequestHandler implements Handler<HttpServerRequest> {
 	private int expireSec;
 	private String readUrl;
 
-	public HttpRequestHandler() {
+	public RestRequestHandler() {
 		super();
 
 		try {

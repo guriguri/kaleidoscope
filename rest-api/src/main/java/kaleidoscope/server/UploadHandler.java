@@ -74,7 +74,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 	@Override
 	public void handle(final HttpServerFileUpload upload) {
 		if (StringUtils.isEmpty(upload.filename()) == true) {
-			HttpRequestHandler.requestEnd(req, 500, "need to file");
+			RestRequestHandler.requestEnd(req, 500, "need to file");
 			return;
 		}
 
@@ -92,7 +92,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 		upload.exceptionHandler(new Handler<Throwable>() {
 			@Override
 			public void handle(Throwable event) {
-				HttpRequestHandler.requestEnd(req, 500, event.getMessage());
+				RestRequestHandler.requestEnd(req, 500, event.getMessage());
 			}
 		});
 
@@ -100,7 +100,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 			@Override
 			public void handle(Void event) {
 				if (FileUtils.getSize(file) > maxUploadFileSize) {
-					HttpRequestHandler.requestEnd(req, 500,
+					RestRequestHandler.requestEnd(req, 500,
 							"The file's size is limited to "
 									+ maxUploadFileSize);
 				}
@@ -121,7 +121,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 					String[] resizeList = resizes.split(",");
 					if (resizeList.length > maxThumbnailCount) {
-						HttpRequestHandler.requestEnd(req, 500,
+						RestRequestHandler.requestEnd(req, 500,
 								"The thumbnails is limited to "
 										+ maxThumbnailCount);
 						return;
@@ -154,12 +154,12 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 									DateUtils.DATE_FORMAT_ISO8601FMT
 											.format(expireDate.getTime()));
 
-					HttpRequestHandler.requestEnd(req, 200, json);
+					RestRequestHandler.requestEnd(req, 200, json);
 
 					FileUtils.rmdir(file);
 				} catch (Exception e) {
 					log.error("e={}", e.getMessage(), e);
-					HttpRequestHandler.requestEnd(req, 500, e.getMessage());
+					RestRequestHandler.requestEnd(req, 500, e.getMessage());
 				}
 			}
 		});

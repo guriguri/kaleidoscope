@@ -29,10 +29,10 @@ import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 
-public class KaleidoscopeHttpServer implements InitializingBean,
+public class RestServer implements InitializingBean,
 		DisposableBean, Runnable {
 	private static Logger log = LoggerFactory
-			.getLogger(KaleidoscopeHttpServer.class);
+			.getLogger(RestServer.class);
 
 	private static final long THREAD_MAIN_SLEEP_MSEC = 1000L;
 

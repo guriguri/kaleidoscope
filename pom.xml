@@ -9,7 +9,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>engine</module>
+		<module>rest-api</module>
 	</modules>
 
 	<properties>

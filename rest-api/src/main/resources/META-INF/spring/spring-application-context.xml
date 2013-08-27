@@ -13,19 +13,19 @@
 		</property>
 	</bean>
 
-	<bean id="kaleidoscopeHttpServer" class="kaleidoscope.server.KaleidoscopeHttpServer"
-		p:handler-ref="httpRequestHandler" p:domain="${kaleidoscope.domain}"
+	<bean id="restServer" class="kaleidoscope.server.RestServer"
+		p:handler-ref="restRequestHandler" p:domain="${kaleidoscope.domain}"
 		p:port="${kaleidoscope.port}" p:isThreadRun="true"
 		p:contextPath="${kaleidoscope.context.path}" />
 
-	<bean id="httpRequestHandler" class="kaleidoscope.server.HttpRequestHandler"
+	<bean id="restRequestHandler" class="kaleidoscope.server.RestRequestHandler"
 		p:rootPath="${kaleidoscope.root.path}" p:cmd="${kaleidoscope.cmd}"
 		p:outfileExt="${kaleidoscope.outfile.ext}" p:defaultResize="${kaleidoscope.default.resize}"
 		p:maxUploadFileSize="${kaleidoscope.max.upload.file.size}"
 		p:maxThumbnailCount="${kaleidoscope.max.thumbnail.count}" p:expireSec="${kaleidoscope.expire.sec}"
 		p:contextPath="${kaleidoscope.context.path}" p:readUrl="${kaleidoscope.read.url}" />
 
-	<bean id="fileRemover" class="kaleidoscope.server.FileRemover"
+	<bean id="fileRemover" class="kaleidoscope.scheduler.FileRemover"
 		p:rootPath="${kaleidoscope.root.path}" p:expireSec="${kaleidoscope.expire.sec}"
 		p:isThreadRun="${kaleidoscope.auto.remove}" />
 </beans>
