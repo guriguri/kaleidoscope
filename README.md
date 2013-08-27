@@ -58,33 +58,34 @@
 
 
 ## API
-* 썸네일 생성
- * request
+### 썸네일 생성
+* request
   * url: http://$kaleidoscope.domain:$kaleidoscope.port/$kaleidoscope.context.path/create
   * method: post
   * param
-   * file: 전송할 파일
-   * resizes
-    * 생성할 썸네일의 사이즈(Width x Height)로 콤마(,) 리스트. (예: 300x300,400x400)
-    * 리스트는 $kaleidoscope.max.thumbnail.count 값 이하여야 함.
- * response
+     * file: 전송할 파일
+     * resizes
+         * 생성할 썸네일의 사이즈(Width x Height)로 콤마(,) 리스트. (예: 300x300,400x400)
+         * 리스트는 $kaleidoscope.max.thumbnail.count 값 이하여야 함.
+* response
   * result
-   * 성공(200)
-   * 실패(500)
+     * 성공(200)
+     * 실패(500)
   * msg
-   * 성공: "success"
-   * 실패
-    * file 이 없을 경우: "need to file"
-    * file 사이즈가 $kaleidoscope.max.upload.file.size 보다 클 경우: "The file's size is limited to $kaleidoscope.max.upload.file.size"
-    * 요청한 썸네일 수가 $kaleidoscope.max.thumbnail.count 보다 많을 경우: "The thumbnails is limited to $kaleidoscope.max.thumbnail.count"
+     * 성공: "success"
+     * 실패
+         * file 이 없을 경우: "need to file"
+         * file 사이즈가 $kaleidoscope.max.upload.file.size 보다 클 경우: "The file's size is limited to $kaleidoscope.max.upload.file.size"
+         * 요청한 썸네일 수가 $kaleidoscope.max.thumbnail.count 보다 많을 경우: "The thumbnails is limited to $kaleidoscope.max.thumbnail.count"
   * thumbnails
-   * 생성된 썸네일 array
+     * 생성된 썸네일 array
   * expireDate
-   * 생성된 썸네일이 삭제될 시간 (ISO8601 포맷)
+     * 생성된 썸네일이 삭제될 시간 (ISO8601 포맷)
   * example
-   * 성공
 
-
+```
+	# 성공
+	
 	{
 		"result": 200,
 		"msg": "success",
@@ -93,8 +94,7 @@
 	}
 
 
-   * 실패
-
+	# 실패
 
 	{
 		"result": 500,
@@ -110,46 +110,48 @@
 		"result": 500,
 		"msg": "The thumbnails is limited to 5"
 	}
+```
 
+### 썸네일 조회
+* request
+   * url: http://$kaleidoscope.domain:$kaleidoscope.port/$kaleidoscope.context.path/read/yyyy/MM/dd/HH/mm/$FILENAME
+   * method: get
+* response
+   * result
+      * 성공(없음. 성공시 썸네일 이미지가 전송)
+      * 실패(404)
+   * msg
+      * 실패
+         * 조회할 썸네일이 없을 경우: "not found"
+   * example
 
-* 썸네일 조회
- * request
-  * url: http://$kaleidoscope.domain:$kaleidoscope.port/$kaleidoscope.context.path/read/yyyy/MM/dd/HH/mm/$FILENAME
-  * method: get
- * response
-  * result
-   * 성공(없음. 성공시 썸네일 이미지가 전송)
-   * 실패(404)
-  * msg
-   * 실패
-    * 조회할 썸네일이 없을 경우: "not found"
-  * example
-
-
+```
+	# 실패
+	
 	{
 		"result": 404,
 		"msg": "not found"
 	}
-  
+```
 
-* 썸네일 삭제
- * request
+### 썸네일 삭제
+* request
   * url: http://$kaleidoscope.domain:$kaleidoscope.port/$kaleidoscope.context.path/delete
   * method: post
   * param
-   * url: 썸네일 url
- * response
+     * url: 썸네일 url
+* response
   * result
-   * 성공(200)
-   * 실패(500)
+     * 성공(200)
+     * 실패(500)
   * msg
-   * 성공: "success"
-   * 실패
-    * url이 공백일 경우: "invalid url, url is empty"
-    * url에 허용되지 않은 문자가 포함될 경우: "invalid url, url has invalid chars"
+     * 성공: "success"
+     * 실패
+         * url이 공백일 경우: "invalid url, url is empty"
+         * url에 허용되지 않은 문자가 포함될 경우: "invalid url, url has invalid chars"
   * example
 
-
+```
 	{
 		"result": 200,
 		"msg": "success"
@@ -164,6 +166,7 @@
 		"result": 500,
 		"msg": "invalid url, url has invalid chars"
 	}
+```
 
 ## Demo
 * [http://100dream.net:6487](http://100dream.net:6487)
