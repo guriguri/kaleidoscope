@@ -152,11 +152,15 @@
   * example
 
 ```
+	# 성공
+	
 	{
 		"result": 200,
 		"msg": "success"
 	}
 	
+	# 실패
+
 	{
 		"result": 500,
 		"msg": "invalid url, url is empty"
