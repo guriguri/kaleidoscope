@@ -84,6 +84,7 @@
   * example
    * 성공
 
+
 	{
 		"result": 200,
 		"msg": "success",
@@ -91,13 +92,15 @@
 		"expireDate": "2013-08-27T22:12:00+0900"
 	}
 
+
    * 실패
+
 
 	{
 		"result": 500,
 		"msg": "need to file"
 	}
-	
+
 	{
 		"result": 500,
 		"msg": "The file's size is limited to 10485760"
@@ -122,6 +125,7 @@
     * 조회할 썸네일이 없을 경우: "not found"
   * example
 
+
 	{
 		"result": 404,
 		"msg": "not found"
@@ -145,6 +149,7 @@
     * url에 허용되지 않은 문자가 포함될 경우: "invalid url, url has invalid chars"
   * example
 
+
 	{
 		"result": 200,
 		"msg": "success"
@@ -161,4 +166,4 @@
 	}
 
 ## Demo
-* http://100dream.net:6487
+* [http://100dream.net:6487](http://100dream.net:6487)
