@@ -74,7 +74,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 	@Override
 	public void handle(final HttpServerFileUpload upload) {
 		if (StringUtils.isEmpty(upload.filename()) == true) {
-			RestRequestHandler.requestEnd(req, 500, "need to file");
+			RestRequestHandler
+					.requestEnd(req, 400, "bad request, need to file");
 			return;
 		}
 
@@ -100,8 +101,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 			@Override
 			public void handle(Void event) {
 				if (FileUtils.getSize(file) > maxUploadFileSize) {
-					RestRequestHandler.requestEnd(req, 500,
-							"The file's size is limited to "
+					RestRequestHandler.requestEnd(req, 400,
+							"bad request, The file's size is limited to "
 									+ maxUploadFileSize);
 				}
 			}
@@ -121,8 +122,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 					String[] resizeList = resizes.split(",");
 					if (resizeList.length > maxThumbnailCount) {
-						RestRequestHandler.requestEnd(req, 500,
-								"The thumbnails is limited to "
+						RestRequestHandler.requestEnd(req, 400,
+								"bad request, The thumbnails is limited to "
 										+ maxThumbnailCount);
 						return;
 					}
@@ -134,8 +135,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					Process process = runtime.exec(command);
 					process.waitFor();
 
-					log.debug("cmd=[{}], exitValue=[{}]", command,
-							process.exitValue());
+					log.debug("cmd=[{}], exitValue=[{}]", command, process
+							.exitValue());
 
 					JsonArray arr = new JsonArray();
 					for (int i = 0; i < resizeList.length; i++) {
@@ -146,10 +147,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 					Calendar expireDate = DateUtils.getCalendar(expireSec);
 					expireDate.set(Calendar.SECOND, 0);
-					JsonObject json = JsonUtils
-							.getJson(200, "success")
-							.putArray("thumbnails", arr)
-							.putString(
+					JsonObject json = JsonUtils.getJson(200, "success")
+							.putArray("thumbnails", arr).putString(
 									"expireDate",
 									DateUtils.DATE_FORMAT_ISO8601FMT
 											.format(expireDate.getTime()));
@@ -157,7 +156,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					RestRequestHandler.requestEnd(req, 200, json);
 
 					FileUtils.rmdir(file);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					log.error("e={}", e.getMessage(), e);
 					RestRequestHandler.requestEnd(req, 500, e.getMessage());
 				}

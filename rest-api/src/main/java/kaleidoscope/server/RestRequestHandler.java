@@ -164,13 +164,13 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 							String url = req.formAttributes().get("url");
 							String file = null;
 							if (StringUtils.isEmpty(url) == true) {
-								requestEnd(req, 500,
-										"invalid url, url is empty");
+								requestEnd(req, 400,
+										"bad request, url is empty");
 							}
 							else if ((file = url.replaceAll(readUrl, ""))
 									.matches(REGEX_THUMBNAIL_URI) != true) {
-								requestEnd(req, 500,
-										"invalid url, url has invalid chars");
+								requestEnd(req, 400,
+										"bad request, url has invalid chars");
 							}
 							else {
 								FileUtils.rmdir(rootPath + "/" + file);
