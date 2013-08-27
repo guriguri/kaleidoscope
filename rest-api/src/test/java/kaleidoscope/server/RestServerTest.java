@@ -44,12 +44,12 @@ import org.vertx.java.core.json.JsonObject;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:/META-INF/spring/spring-application-context-test.xml" })
-public class KaleidoscopeHttpServerTest {
+public class RestServerTest {
 	private static Logger log = LoggerFactory
-			.getLogger(KaleidoscopeHttpServerTest.class);
+			.getLogger(RestServerTest.class);
 
 	private static String FILENAME = "guriguri.png";
-	private static int THREAD_SLEEP_MSEC = 5000;
+	private static int THREAD_SLEEP_MSEC = 50000;
 
 	@Value("${kaleidoscope.domain}")
 	private String domain;
@@ -200,7 +200,7 @@ public class KaleidoscopeHttpServerTest {
 				});
 
 		Buffer buffer = new Buffer();
-		buffer.appendString("file=" + url);
+		buffer.appendString("url=" + url);
 		request.headers()
 				.set("content-length", String.valueOf(buffer.length()));
 		request.headers().set("content-type",
