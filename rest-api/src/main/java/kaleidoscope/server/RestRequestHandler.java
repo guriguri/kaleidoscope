@@ -41,10 +41,10 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 	private String contextPath;
 	private String cmd;
 	private String outfileExt;
-	private String defaultResize;
-	private int maxUploadFileSize;
-	private int maxThumbnailCount;
-	private int expireSec;
+	private String defaultResize = "300x300";
+	private int maxUploadFileSize = 10 * 1024 * 1024;
+	private int maxThumbnailCount = 5;
+	private int expireSec = 120;
 	private String readUrl;
 
 	public RestRequestHandler() {

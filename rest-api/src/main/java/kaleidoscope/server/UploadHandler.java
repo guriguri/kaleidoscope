@@ -42,83 +42,39 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 	private HttpServerRequest req;
 
 	private String rootPath;
-	private String cmd;
-	private String outfileExt;
-	private String defaultResize = "300x300";
-	private int maxUploadFileSize = 10 * 1024 * 1024;
-	private int maxThumbnailCount = 5;
-	private int expireSec = 120;
-	private String readUrl;
 
-	public UploadHandler(HttpServerRequest req, String rootPath, String cmd,
-			String outfileExt, String defaultResize, int maxUploadFileSize,
-			int maxThumbnailCount, int expireSec, String readUrl)
-			throws URISyntaxException {
+	private String path;
+	private String basename;
+	private String file;
+
+	public UploadHandler(final HttpServerRequest req, final String rootPath,
+			final String cmd, final String outfileExt,
+			final String defaultResize, final int maxUploadFileSize,
+			final int maxThumbnailCount, final int expireSec,
+			final String readUrl) throws URISyntaxException {
 		this.req = req;
 		this.rootPath = rootPath;
-		this.cmd = Paths.get(
+		final String realCmd = Paths.get(
 				getClass().getClassLoader().getResource(cmd).toURI())
 				.toString();
-		this.outfileExt = outfileExt;
-		this.defaultResize = defaultResize;
-		this.maxUploadFileSize = maxUploadFileSize;
-		this.maxThumbnailCount = maxThumbnailCount;
-		this.expireSec = -1 * expireSec;
-		this.readUrl = readUrl;
-
-		log.debug("rootPath={}, cmd={}, outfileExt={}, defaultResize={}"
-				+ ", maxUploadFileSize={}, maxThumbnailCount={}"
-				+ ", expireSec={}, readUrl={}", new Object[] { rootPath,
-				this.cmd, outfileExt, defaultResize, maxUploadFileSize,
-				maxThumbnailCount, expireSec, readUrl });
-	}
-
-	@Override
-	public void handle(final HttpServerFileUpload upload) {
-		if (StringUtils.isEmpty(upload.filename()) == true) {
-			RestRequestHandler.requestEnd(req, HttpResponseStatus.BAD_REQUEST,
-					"need to file");
-			return;
-		}
-
-		String path = rootPath + "/"
-				+ DateUtils.DATE_FORMAT_YYYYMMDDHHMI.format(new Date());
-		FileUtils.mkdir(path);
-
-		String ext = FileUtils.getExt(upload.filename());
-
-		String basename = UUID.randomUUID().toString();
-		final String filename = basename + ext;
-		final String outfilePrefix = path + "/" + basename;
-		final String file = path + "/" + filename;
-
-		upload.exceptionHandler(new Handler<Throwable>() {
-			@Override
-			public void handle(Throwable event) {
-				RestRequestHandler.requestEnd(req,
-						HttpResponseStatus.INTERNAL_SERVER_ERROR, event
-								.getMessage());
-			}
-		});
-
-		upload.endHandler(new Handler<Void>() {
-			@Override
-			public void handle(Void event) {
-				if (FileUtils.getSize(file) > maxUploadFileSize) {
-					RestRequestHandler.requestEnd(req,
-							HttpResponseStatus.BAD_REQUEST,
-							"The file's size is limited to "
-									+ maxUploadFileSize);
-				}
-			}
-		});
-
-		upload.streamToFileSystem(file);
 
 		req.endHandler(new Handler<Void>() {
 			@Override
 			public void handle(Void event) {
 				try {
+					if (file == null) {
+						RestRequestHandler.requestEnd(req,
+								HttpResponseStatus.BAD_REQUEST, "need to file");
+						return;
+					}
+					else if (FileUtils.getSize(file) > maxUploadFileSize) {
+						RestRequestHandler.requestEnd(req,
+								HttpResponseStatus.BAD_REQUEST,
+								"The file's size is limited to "
+										+ maxUploadFileSize);
+						return;
+					}
+
 					String resizes = req.formAttributes().get("resizes");
 					if ((resizes == null)
 							|| ((resizes = resizes.trim()).length() == 0)) {
@@ -134,8 +90,10 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 						return;
 					}
 
+					String outfilePrefix = path + "/" + basename;
+
 					Runtime runtime = Runtime.getRuntime();
-					String command = cmd + " " + Paths.get(file) + " "
+					String command = realCmd + " " + Paths.get(file) + " "
 							+ Paths.get(outfilePrefix) + " " + outfileExt + " "
 							+ resizes;
 					Process process = runtime.exec(command);
@@ -172,5 +130,39 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 				}
 			}
 		});
+
+		log.debug("rootPath={}, cmd={}, outfileExt={}, defaultResize={}"
+				+ ", maxUploadFileSize={}, maxThumbnailCount={}"
+				+ ", expireSec={}, readUrl={}", new Object[] { rootPath,
+				realCmd, outfileExt, defaultResize, maxUploadFileSize,
+				maxThumbnailCount, expireSec, readUrl });
+	}
+
+	@Override
+	public void handle(final HttpServerFileUpload upload) {
+		if ((upload == null)
+				|| (StringUtils.isEmpty(upload.filename()) == true)) {
+			RestRequestHandler.requestEnd(req, HttpResponseStatus.BAD_REQUEST,
+					"need to file");
+			return;
+		}
+
+		path = rootPath + "/"
+				+ DateUtils.DATE_FORMAT_YYYYMMDDHHMI.format(new Date());
+		FileUtils.mkdir(path);
+
+		basename = UUID.randomUUID().toString();
+		file = path + "/" + basename + FileUtils.getExt(upload.filename());
+
+		upload.exceptionHandler(new Handler<Throwable>() {
+			@Override
+			public void handle(Throwable event) {
+				RestRequestHandler.requestEnd(req,
+						HttpResponseStatus.INTERNAL_SERVER_ERROR, event
+								.getMessage());
+			}
+		});
+
+		upload.streamToFileSystem(file);
 	}
 }
