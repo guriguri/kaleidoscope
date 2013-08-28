@@ -4,13 +4,9 @@
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf8">
 <title>Kaleidoscope (썸네일 생성기)</title>
-<link rel="stylesheet"
-	href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
 <script type="text/javascript"
 	src="http://code.jquery.com/jquery-1.9.1.js"></script>
 <script src="http://malsup.github.com/jquery.form.js"></script>
-<script type="text/javascript"
-	src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 <style type="text/css">
 body {
 	font-family: 돋움, Dotum, sans-serif;
@@ -33,10 +29,19 @@ body {
 			beforeSubmit : function() {
 				$('#create_result').html('uploading...');
 			},
-			error : function(data) {
-				var jData = JSON.parse(data);
-				$('#create_result').html('Failure - ' + jData.msg);
-			},
+			error: function (data) {
+                var r = jQuery.parseJSON(data.responseText);
+                alert("Message: " + r.msg);
+         	},
+         	/*
+		    error: function(xhr, textStatus, errorThrown) {
+		        console.log("xhr=" + xhr);
+		        console.log("xhr.status=" + xhr.status);
+		        console.log("textStatus=" + textStatus);
+		        console.log("errorThrown=" + errorThrown);
+				$('#create_result').html("error");
+		    },
+		    */
 			success : function(data) {
 				var jData = JSON.parse(data);
 				$('#create_result').html('Success - ' + jData.thumbnails);
@@ -45,7 +50,7 @@ body {
 
 		$('#delete_form').ajaxForm({
 			dataType : 'text',
-			error : function(data) {
+			complete : function(data) {
 				var jData = JSON.parse(data);
 				$('#delete_result').html('Failure - ' + jData.msg);
 			},
