@@ -29,19 +29,10 @@ body {
 			beforeSubmit : function() {
 				$('#create_result').html('uploading...');
 			},
-			error: function (data) {
-                var r = jQuery.parseJSON(data.responseText);
-                alert("Message: " + r.msg);
-         	},
-         	/*
-		    error: function(xhr, textStatus, errorThrown) {
-		        console.log("xhr=" + xhr);
-		        console.log("xhr.status=" + xhr.status);
-		        console.log("textStatus=" + textStatus);
-		        console.log("errorThrown=" + errorThrown);
-				$('#create_result').html("error");
-		    },
-		    */
+			error : function(data) {
+				var jData = jQuery.parseJSON(data.responseText);
+				$('#create_result').html('Failure - ' + jData.msg);
+			},
 			success : function(data) {
 				var jData = JSON.parse(data);
 				$('#create_result').html('Success - ' + jData.thumbnails);
@@ -50,8 +41,8 @@ body {
 
 		$('#delete_form').ajaxForm({
 			dataType : 'text',
-			complete : function(data) {
-				var jData = JSON.parse(data);
+			error : function(data) {
+				var jData = jQuery.parseJSON(data.responseText);
 				$('#delete_result').html('Failure - ' + jData.msg);
 			},
 			success : function(data) {
