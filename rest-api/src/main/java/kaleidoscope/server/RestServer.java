@@ -15,7 +15,7 @@
  */
 package kaleidoscope.server;
 
-import kaleidoscope.util.JsonUtils;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -29,10 +29,8 @@ import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 
-public class RestServer implements InitializingBean,
-		DisposableBean, Runnable {
-	private static Logger log = LoggerFactory
-			.getLogger(RestServer.class);
+public class RestServer implements InitializingBean, DisposableBean, Runnable {
+	private static Logger log = LoggerFactory.getLogger(RestServer.class);
 
 	private static final long THREAD_MAIN_SLEEP_MSEC = 1000L;
 
@@ -69,21 +67,21 @@ public class RestServer implements InitializingBean,
 			server = vertx.createHttpServer();
 
 			RouteMatcher rm = new RouteMatcher();
-			rm.post(contextPath + "/create", handler);
 			rm.get("/", handler);
 			rm.get(contextPath, handler);
+			rm.post(contextPath + "/create", handler);
 			rm.get(contextPath + "/read/.*", handler);
 			rm.post(contextPath + "/delete", handler);
 			rm.noMatch(new Handler<HttpServerRequest>() {
 				public void handle(HttpServerRequest req) {
-					req.response().setStatusCode(404);
-					req.response().end(JsonUtils.getJson(404).toString());
+					RestRequestHandler.requestEnd(req,
+							HttpResponseStatus.NOT_FOUND);
 				}
 			});
 
 			if (StringUtils.isEmpty(domain) == true) {
 				server.requestHandler(rm).listen(port);
-				log.info("START, listening, http://0.0.0.0:{}", port);
+				log.info("START, listening, http://*:{}", port);
 			}
 			else {
 				server.requestHandler(rm).listen(port, domain);

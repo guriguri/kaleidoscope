@@ -15,6 +15,8 @@
  */
 package kaleidoscope.server;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 import java.io.File;
 import java.util.Map;
 
@@ -95,8 +97,8 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		this.readUrl = readUrl;
 	}
 
-	public static void requestEnd(HttpServerRequest req, int code, Object obj,
-			boolean isOnlyLog) {
+	public static void requestEnd(HttpServerRequest req,
+			HttpResponseStatus status, Object obj, boolean isOnlyLog) {
 		if (req == null) {
 			log.error("req is null");
 			return;
@@ -106,11 +108,14 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		String method = req.method().toLowerCase();
 		String query = "";
 
+		int statusCode = status.code();
+		String statusMsg = status.reasonPhrase();
+
 		if (obj == null) {
-			json = JsonUtils.getJson(code).toString();
+			json = JsonUtils.getJson(statusCode, statusMsg).toString();
 		}
 		else if (obj instanceof String) {
-			json = JsonUtils.getJson(code, (String) obj).toString();
+			json = JsonUtils.getJson(statusCode, (String) obj).toString();
 		}
 		else if (obj instanceof JsonObject) {
 			json = obj.toString();
@@ -130,17 +135,25 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		log.info("uri={}?{}, json={}", new Object[] { req.uri(), query, json });
 
 		if (isOnlyLog != true) {
-			req.response().setStatusCode(code);
+			req.response().setStatusCode(statusCode);
+			req.response().setStatusMessage(statusMsg);
 			req.response().end(json);
 		}
 	}
 
-	public static void requestEnd(HttpServerRequest req, int code, Object obj) {
-		requestEnd(req, code, obj, false);
+	public static void requestEnd(HttpServerRequest req,
+			HttpResponseStatus status, Object obj) {
+		requestEnd(req, status, obj, false);
 	}
 
-	public static void requestEnd(HttpServerRequest req, int code) {
-		requestEnd(req, code, null);
+	public static void requestEnd(HttpServerRequest req,
+			HttpResponseStatus status, boolean isOnlyLog) {
+		requestEnd(req, status, null, isOnlyLog);
+	}
+
+	public static void requestEnd(HttpServerRequest req,
+			HttpResponseStatus status) {
+		requestEnd(req, status, null);
 	}
 
 	@Override
@@ -164,23 +177,23 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 							String url = req.formAttributes().get("url");
 							String file = null;
 							if (StringUtils.isEmpty(url) == true) {
-								requestEnd(req, 400,
-										"bad request, url is empty");
+								requestEnd(req, HttpResponseStatus.BAD_REQUEST,
+										"url is empty");
 							}
 							else if ((file = url.replaceAll(readUrl, ""))
 									.matches(REGEX_THUMBNAIL_URI) != true) {
-								requestEnd(req, 400,
-										"bad request, url has invalid chars");
+								requestEnd(req, HttpResponseStatus.BAD_REQUEST,
+										"url has invalid chars");
 							}
 							else {
 								FileUtils.rmdir(rootPath + "/" + file);
-								requestEnd(req, 200);
+								requestEnd(req, HttpResponseStatus.OK);
 							}
 						}
 					});
 				}
 				else {
-					requestEnd(req, 404);
+					requestEnd(req, HttpResponseStatus.NOT_FOUND);
 				}
 			}
 			else if ("get".equals(method) == true) {
@@ -197,18 +210,19 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 
 				if (FileUtils.isExist(file) == true) {
 					req.response().sendFile(file);
-					requestEnd(req, 200, "success", true);
+					requestEnd(req, HttpResponseStatus.OK, true);
 				}
 				else {
-					requestEnd(req, 404);
+					requestEnd(req, HttpResponseStatus.NOT_FOUND);
 				}
 			}
 			else {
-				requestEnd(req, 404);
+				requestEnd(req, HttpResponseStatus.NOT_FOUND);
 			}
 		}
 		catch (Exception e) {
-			requestEnd(req, 500, e.getMessage());
+			requestEnd(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e
+					.getMessage());
 		}
 	}
 }

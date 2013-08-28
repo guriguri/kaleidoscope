@@ -70,9 +70,9 @@
 * response
   * result
      * 성공(200)
-     * 실패(500)
+     * 실패(400, 500)
   * msg
-     * 성공: "success"
+     * 성공: "OK"
      * 실패
          * file 이 없을 경우: "need to file"
          * file 사이즈가 $kaleidoscope.max.upload.file.size 보다 클 경우: "The file's size is limited to $kaleidoscope.max.upload.file.size"
@@ -88,7 +88,7 @@
 	
 	{
 		"result": 200,
-		"msg": "success",
+		"msg": "OK",
 		"thumbnails": ["http://100dream.net:6487/kaleidoscope/read/2013/08/27/22/10/07526b2b-d92b-4ed6-9cb2-a91844aeef3a_300x300.jpg"],
 		"expireDate": "2013-08-27T22:12:00+0900"
 	}
@@ -97,18 +97,23 @@
 	# 실패
 
 	{
-		"result": 500,
+		"result": 400,
 		"msg": "need to file"
 	}
 
 	{
-		"result": 500,
+		"result": 400,
 		"msg": "The file's size is limited to 10485760"
 	}
 	
 	{
-		"result": 500,
+		"result": 400,
 		"msg": "The thumbnails is limited to 5"
+	}
+	
+	{
+		"result": 500,
+		"msg": "error msg..."
 	}
 ```
 
@@ -130,7 +135,7 @@
 	
 	{
 		"result": 404,
-		"msg": "not found"
+		"msg": "Not Found"
 	}
 ```
 
@@ -143,12 +148,12 @@
 * response
   * result
      * 성공(200)
-     * 실패(500)
+     * 실패(400, 500)
   * msg
-     * 성공: "success"
+     * 성공: "OK"
      * 실패
-         * url이 공백일 경우: "invalid url, url is empty"
-         * url에 허용되지 않은 문자가 포함될 경우: "invalid url, url has invalid chars"
+         * url이 공백일 경우: "url is empty"
+         * url에 허용되지 않은 문자가 포함될 경우: "url has invalid chars"
   * example
 
 ```
@@ -156,19 +161,24 @@
 	
 	{
 		"result": 200,
-		"msg": "success"
+		"msg": "OK"
 	}
 	
 	# 실패
 
 	{
-		"result": 500,
-		"msg": "invalid url, url is empty"
+		"result": 400,
+		"msg": "url is empty"
+	}
+	
+	{
+		"result": 400,
+		"msg": "url has invalid chars"
 	}
 	
 	{
 		"result": 500,
-		"msg": "invalid url, url has invalid chars"
+		"msg": "error msg..."
 	}
 ```
 

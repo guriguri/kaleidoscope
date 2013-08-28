@@ -15,6 +15,8 @@
  */
 package kaleidoscope.server;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Calendar;
@@ -74,8 +76,8 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 	@Override
 	public void handle(final HttpServerFileUpload upload) {
 		if (StringUtils.isEmpty(upload.filename()) == true) {
-			RestRequestHandler
-					.requestEnd(req, 400, "bad request, need to file");
+			RestRequestHandler.requestEnd(req, HttpResponseStatus.BAD_REQUEST,
+					"need to file");
 			return;
 		}
 
@@ -93,7 +95,9 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 		upload.exceptionHandler(new Handler<Throwable>() {
 			@Override
 			public void handle(Throwable event) {
-				RestRequestHandler.requestEnd(req, 500, event.getMessage());
+				RestRequestHandler.requestEnd(req,
+						HttpResponseStatus.INTERNAL_SERVER_ERROR, event
+								.getMessage());
 			}
 		});
 
@@ -101,8 +105,9 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 			@Override
 			public void handle(Void event) {
 				if (FileUtils.getSize(file) > maxUploadFileSize) {
-					RestRequestHandler.requestEnd(req, 400,
-							"bad request, The file's size is limited to "
+					RestRequestHandler.requestEnd(req,
+							HttpResponseStatus.BAD_REQUEST,
+							"The file's size is limited to "
 									+ maxUploadFileSize);
 				}
 			}
@@ -122,8 +127,9 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 					String[] resizeList = resizes.split(",");
 					if (resizeList.length > maxThumbnailCount) {
-						RestRequestHandler.requestEnd(req, 400,
-								"bad request, The thumbnails is limited to "
+						RestRequestHandler.requestEnd(req,
+								HttpResponseStatus.BAD_REQUEST,
+								"The thumbnails is limited to "
 										+ maxThumbnailCount);
 						return;
 					}
@@ -147,19 +153,22 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 					Calendar expireDate = DateUtils.getCalendar(expireSec);
 					expireDate.set(Calendar.SECOND, 0);
-					JsonObject json = JsonUtils.getJson(200, "success")
+					JsonObject json = JsonUtils.getJson(HttpResponseStatus.OK)
 							.putArray("thumbnails", arr).putString(
 									"expireDate",
 									DateUtils.DATE_FORMAT_ISO8601FMT
 											.format(expireDate.getTime()));
 
-					RestRequestHandler.requestEnd(req, 200, json);
+					RestRequestHandler.requestEnd(req, HttpResponseStatus.OK,
+							json);
 
 					FileUtils.rmdir(file);
 				}
 				catch (Exception e) {
 					log.error("e={}", e.getMessage(), e);
-					RestRequestHandler.requestEnd(req, 500, e.getMessage());
+					RestRequestHandler.requestEnd(req,
+							HttpResponseStatus.INTERNAL_SERVER_ERROR, e
+									.getMessage());
 				}
 			}
 		});

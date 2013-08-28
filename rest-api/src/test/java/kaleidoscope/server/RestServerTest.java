@@ -15,6 +15,8 @@
  */
 package kaleidoscope.server;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -45,11 +47,10 @@ import org.vertx.java.core.json.JsonObject;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:/META-INF/spring/spring-application-context-test.xml" })
 public class RestServerTest {
-	private static Logger log = LoggerFactory
-			.getLogger(RestServerTest.class);
+	private static Logger log = LoggerFactory.getLogger(RestServerTest.class);
 
 	private static String FILENAME = "guriguri.png";
-	private static int THREAD_SLEEP_MSEC = 50000;
+	private static int THREAD_SLEEP_MSEC = 5000;
 
 	@Value("${kaleidoscope.domain}")
 	private String domain;
@@ -85,7 +86,8 @@ public class RestServerTest {
 				new Handler<HttpClientResponse>() {
 					@Override
 					public void handle(HttpClientResponse resp) {
-						Assert.assertEquals(200, resp.statusCode());
+						Assert.assertEquals(HttpResponseStatus.OK.code(), resp
+								.statusCode());
 
 						resp.bodyHandler(new Handler<Buffer>() {
 							public void handle(Buffer body) {
@@ -140,7 +142,8 @@ public class RestServerTest {
 			HttpClientRequest request = client.get((String) reqUrl,
 					new Handler<HttpClientResponse>() {
 						public void handle(final HttpClientResponse resp) {
-							Assert.assertEquals(200, resp.statusCode());
+							Assert.assertEquals(HttpResponseStatus.OK.code(),
+									resp.statusCode());
 
 							final Buffer buff = new Buffer(0);
 
@@ -189,7 +192,8 @@ public class RestServerTest {
 		HttpClientRequest request = client.post(reqUrl,
 				new Handler<HttpClientResponse>() {
 					public void handle(HttpClientResponse resp) {
-						Assert.assertEquals(200, resp.statusCode());
+						Assert.assertEquals(HttpResponseStatus.OK.code(), resp
+								.statusCode());
 
 						resp.bodyHandler(new Handler<Buffer>() {
 							public void handle(Buffer data) {

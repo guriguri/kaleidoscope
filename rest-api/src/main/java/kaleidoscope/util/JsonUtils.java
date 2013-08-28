@@ -15,6 +15,8 @@
  */
 package kaleidoscope.util;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 import org.vertx.java.core.json.JsonObject;
 
 public class JsonUtils {
@@ -25,20 +27,7 @@ public class JsonUtils {
 		return json;
 	}
 
-	public static JsonObject getJson(int code) {
-		String msg = null;
-
-		switch (code) {
-			case 200:
-				msg = "success";
-				break;
-			case 404:
-				msg = "not found";
-				break;
-			default:
-				msg = "unknown error";
-		}
-
-		return getJson(code, msg);
+	public static JsonObject getJson(HttpResponseStatus status) {
+		return getJson(status.code(), status.reasonPhrase());
 	}
 }
