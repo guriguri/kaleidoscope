@@ -4,19 +4,94 @@
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf8">
 <title>Kaleidoscope (썸네일 생성기)</title>
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script type="text/javascript"
+	src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://malsup.github.com/jquery.form.js"></script>
+<script type="text/javascript"
+	src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<style type="text/css">
+body {
+	font-family: 돋움, Dotum, sans-serif;
+	font-size: 12px;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+
+#container {
+	text-align: left;
+	width: 500px;
+	margin: 0 auto;
+}
+</style>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#create_form').ajaxForm({
+			dataType : 'text',
+			beforeSubmit : function() {
+				$('#create_result').html('uploading...');
+			},
+			error : function(data) {
+				var jData = JSON.parse(data);
+				$('#create_result').html('Failure - ' + jData.msg);
+			},
+			success : function(data) {
+				var jData = JSON.parse(data);
+				$('#create_result').html('Success - ' + jData.thumbnails);
+			}
+		});
+
+		$('#delete_form').ajaxForm({
+			dataType : 'text',
+			error : function(data) {
+				var jData = JSON.parse(data);
+				$('#delete_result').html('Failure - ' + jData.msg);
+			},
+			success : function(data) {
+				var jData = JSON.parse(data);
+				$('#delete_result').html('Success - ' + jData.thumbnails);
+			}
+		});
+	});
+</script>
 </head>
 <body>
-	<h>썸네일 생성</h>
-	<form action="/kaleidoscope/create" method="post"
-		enctype="multipart/form-data" name="create">
-		choose a file to upload:<input type="file" name="file" /><br>
-		resizes (separator ,):<input type="text" name="resizes" /><br> <input
-			type="submit" />
-	</form>
-	<br/><br/>
-	<h>썸네일 삭제</h>
-	<form action="/kaleidoscope/delete" method="post" name="delete">
-		url:<input type="text" name="url" /><br> <input type="submit" />
-	</form>
+	<div id="container">
+		<div id="head">
+			<h1>Kaleidoscope</h1>
+			<p>
+				Kaleidoscope는 <a href="http://vertx.io/">vert.x</a>와 <a
+					href="http://www.graphicsmagick.org/">graphicsmagick</a>을 이용한 Web
+				기반 쎔네일 생성기입니다.
+			</p>
+		</div>
+		<div id="create">
+			<h3>썸네일 생성</h3>
+			<p>
+			<form action="/kaleidoscope/create" method="post"
+				enctype="multipart/form-data" name="create_form" id="create_form">
+				이미지 파일 선택:<input type="file" name="file" /><br /> 썸네일 사이즈:<input
+					type="text" name="resizes" value="300x300" /><br /> <input
+					type="submit" value="썸네일 생성" />
+			</form>
+			</p>
+
+			<div id="create_result"></div>
+		</div>
+		<div id="delete">
+			<h3>썸네일 삭제</h3>
+			<p>
+			<form action="/kaleidoscope/delete" method="post" name="delete_form"
+				id="delete_form">
+				이미지 url:<input type="text" name="url" /><br /> <input
+					type="submit" value="썸네일 삭제" />
+			</form>
+			</p>
+			<div id="delete_result"></div>
+		</div>
+		<div id="foot"></div>
+	</div>
 </body>
 </html>
