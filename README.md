@@ -33,6 +33,7 @@
 	kaleidoscope.cmd=script/make_thumbnails.sh
 	#kaleidoscope.cmd=script/echo_shell.sh
 	#kaleidoscope.cmd=script/echo_shell.bat
+	kaleidoscope.support.image.format=gif,jpg,jpeg,png,bmp,tif,tiff
 	kaleidoscope.outfile.ext=jpg
 	kaleidoscope.default.resize=300x300
 	kaleidoscope.max.upload.file.size=10485760
@@ -50,6 +51,7 @@
 | kaleidoscope.root.path            | 썸네일이 생성될 경로                                                        |
 | kaleidoscope.cmd                  | 썸네일 생성을 위한 script 상대경로                                          |
 | kaleidoscope.outfile.ext          | 썸네일 포멧                                                                 |
+| kaleidoscope.support.image.format | 지원하는 이미지 포맷                                                        |
 | kaleidoscope.default.resize       | default 썸네일 크기                                                         |
 | kaleidoscope.max.upload.file.size | 업로드 파일의 최대 사이즈 (단위: byte)                                      |
 | kaleidoscope.max.thumbnail.count  | 한번에 생성할 수 있는 썸네일의 수                                           |
@@ -74,9 +76,10 @@
   * msg
      * 성공: "OK"
      * 실패
-         * file 이 없을 경우: "need to file"
-         * file 사이즈가 $kaleidoscope.max.upload.file.size 보다 클 경우: "The file's size is limited to $kaleidoscope.max.upload.file.size"
-         * 요청한 썸네일 수가 $kaleidoscope.max.thumbnail.count 보다 많을 경우: "The thumbnails is limited to $kaleidoscope.max.thumbnail.count"
+         * file 이 없을 경우: "썸네일을 생성할 파일 선택이 필요합니다."
+         * file 사이즈가 $kaleidoscope.max.upload.file.size 보다 클 경우: "업로드한 파일의 사이즈가 $kaleidoscope.max.upload.file.size bytes 이하이어야 합니다."
+         * $kaleidoscope.support.image.format 에 없는 이미지 포맷일 경우: "$kaleidoscope.support.image.format 이미지 파일만 지원합니다."
+         * 요청한 썸네일 수가 $kaleidoscope.max.thumbnail.count 보다 많을 경우: "한 번에 생성할 수 있는 썸네일 수는 $kaleidoscope.max.thumbnail.count 개 까지입니다."
   * thumbnails
      * 생성된 썸네일 array
   * expireDate
@@ -98,17 +101,22 @@
 
 	{
 		"result": 400,
-		"msg": "need to file"
+		"msg": "썸네일을 생성할 파일 선택이 필요합니다."
 	}
 
 	{
 		"result": 400,
-		"msg": "The file's size is limited to 10485760"
+		"msg": "업로드한 파일의 사이즈가 10,485,760 bytes 이하이어야 합니다."
+	}
+
+	{
+		"result": 400,
+		"msg": "gif,jpg,jpeg,png,bmp,tif,tiff 이미지 파일만 지원합니다."
 	}
 	
 	{
 		"result": 400,
-		"msg": "The thumbnails is limited to 5"
+		"msg": "한 번에 생성할 수 있는 썸네일 수는 5 개 까지입니다."
 	}
 	
 	{
@@ -127,7 +135,7 @@
       * 실패(404)
    * msg
       * 실패
-         * 조회할 썸네일이 없을 경우: "not found"
+         * 조회할 썸네일이 없을 경우: "Not Found"
    * example
 
 ```
@@ -152,8 +160,8 @@
   * msg
      * 성공: "OK"
      * 실패
-         * url이 공백일 경우: "url is empty"
-         * url에 허용되지 않은 문자가 포함될 경우: "url has invalid chars"
+         * url이 공백일 경우: "삭제는 위해서는 썸네일 URL이 필요합니다."
+         * url에 허용되지 않은 문자가 포함될 경우: "잘못된 URL 입니다."
   * example
 
 ```
@@ -168,12 +176,12 @@
 
 	{
 		"result": 400,
-		"msg": "url is empty"
+		"msg": "삭제는 위해서는 썸네일 URL이 필요합니다."
 	}
 	
 	{
 		"result": 400,
-		"msg": "url has invalid chars"
+		"msg": "잘못된 URL 입니다."
 	}
 	
 	{
