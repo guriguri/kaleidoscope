@@ -18,7 +18,9 @@ package kaleidoscope.server;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import kaleidoscope.util.FileUtils;
 import kaleidoscope.util.JsonUtils;
@@ -46,6 +48,7 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 	private int maxThumbnailCount = 5;
 	private int expireSec = 120;
 	private String readUrl;
+	private Set<String> supportImageFormat = new HashSet<String>();
 
 	public RestRequestHandler() {
 		super();
@@ -97,6 +100,15 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		this.readUrl = readUrl;
 	}
 
+	public void setSupportImageFormat(String supportImageFormat) {
+		if (StringUtils.isEmpty(supportImageFormat) != true) {
+			String[] imgExt = supportImageFormat.split(",");
+			for (String ext : imgExt) {
+				this.supportImageFormat.add(ext);
+			}
+		}
+	}
+
 	public static void requestEnd(HttpServerRequest req,
 			HttpResponseStatus status, Object obj, boolean isOnlyLog) {
 		if (req == null) {
@@ -138,7 +150,7 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 			req.response().setStatusCode(statusCode);
 			req.response().setStatusMessage(statusMsg);
 			req.response().putHeader("Access-Control-Allow-Origin", "*");
-			
+
 			req.response().end(json);
 		}
 	}
@@ -169,7 +181,8 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 					req.expectMultiPart(true);
 					req.uploadHandler(new UploadHandler(req, rootPath, cmd,
 							outfileExt, defaultResize, maxUploadFileSize,
-							maxThumbnailCount, expireSec, readUrl));
+							maxThumbnailCount, expireSec, readUrl,
+							supportImageFormat));
 				}
 				else if (path.endsWith("delete") == true) {
 					req.expectMultiPart(true);

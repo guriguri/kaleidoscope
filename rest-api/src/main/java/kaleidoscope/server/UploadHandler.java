@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 import kaleidoscope.util.DateUtils;
@@ -45,15 +46,19 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 	private String path;
 	private String basename;
+	private String ext;
 	private String file;
+	private Set<String> supportImageFormat;
 
 	public UploadHandler(final HttpServerRequest req, final String rootPath,
 			final String cmd, final String outfileExt,
 			final String defaultResize, final int maxUploadFileSize,
 			final int maxThumbnailCount, final int expireSec,
-			final String readUrl) throws URISyntaxException {
+			final String readUrl, final Set<String> supportImageFormat)
+			throws URISyntaxException {
 		this.req = req;
 		this.rootPath = rootPath;
+		this.supportImageFormat = supportImageFormat;
 		final String realCmd = Paths.get(
 				getClass().getClassLoader().getResource(cmd).toURI())
 				.toString();
@@ -72,6 +77,12 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 								HttpResponseStatus.BAD_REQUEST,
 								"The file's size is limited to "
 										+ maxUploadFileSize);
+						return;
+					}
+					else if (supportImageFormat.contains(ext) != true) {
+						RestRequestHandler.requestEnd(req,
+								HttpResponseStatus.BAD_REQUEST,
+								"invalid image format");
 						return;
 					}
 
@@ -133,26 +144,28 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 
 		log.debug("rootPath={}, cmd={}, outfileExt={}, defaultResize={}"
 				+ ", maxUploadFileSize={}, maxThumbnailCount={}"
-				+ ", expireSec={}, readUrl={}", new Object[] { rootPath,
-				realCmd, outfileExt, defaultResize, maxUploadFileSize,
-				maxThumbnailCount, expireSec, readUrl });
+				+ ", expireSec={}, readUrl={}, supportImageFormat={}",
+				new Object[] { rootPath, realCmd, outfileExt, defaultResize,
+						maxUploadFileSize, maxThumbnailCount, expireSec,
+						readUrl, supportImageFormat });
 	}
 
 	@Override
 	public void handle(final HttpServerFileUpload upload) {
 		if ((upload == null)
 				|| (StringUtils.isEmpty(upload.filename()) == true)) {
-			RestRequestHandler.requestEnd(req, HttpResponseStatus.BAD_REQUEST,
-					"need to file");
 			return;
 		}
 
 		path = rootPath + "/"
 				+ DateUtils.DATE_FORMAT_YYYYMMDDHHMI.format(new Date());
-		FileUtils.mkdir(path);
-
 		basename = UUID.randomUUID().toString();
-		file = path + "/" + basename + FileUtils.getExt(upload.filename());
+		ext = FileUtils.getExt(upload.filename());
+		file = path + "/" + basename + "." + ext;
+
+		if (supportImageFormat.contains(ext) != true) {
+			return;
+		}
 
 		upload.exceptionHandler(new Handler<Throwable>() {
 			@Override
@@ -163,6 +176,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 			}
 		});
 
+		FileUtils.mkdir(path);
 		upload.streamToFileSystem(file);
 	}
 }
