@@ -1,7 +1,7 @@
 # Kaleidoscope
 
 ## 소개
-* Kaleidoscope는 [http://vertx.io/](Vert.x)와 [http://www.graphicsmagick.org/](GraphicsMagick)을 이용한 Web 기반 쎔네일 생성기입니다.
+* Kaleidoscope는 [http://vertx.io/](Vert.x), [http://www.graphicsmagick.org/](GraphicsMagick), [http://wrapper.tanukisoftware.com/doc/english/download.jsp](Java Service Wrapper)을 이용한 쎔네일 생성 REST 서버입니다.
 
 ## 요구사항
 * JDK 7+
