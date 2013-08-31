@@ -19,6 +19,7 @@
 				<include>*.conf</include>
 				<include>*.xml</include>
 				<include>*.properties</include>
+				<include>messages/*.properties</include>
 			</includes>
 		</fileSet>
 		<fileSet>
