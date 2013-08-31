@@ -137,6 +137,8 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		if (isOnlyLog != true) {
 			req.response().setStatusCode(statusCode);
 			req.response().setStatusMessage(statusMsg);
+			req.response().putHeader("Access-Control-Allow-Origin", "*");
+			
 			req.response().end(json);
 		}
 	}
