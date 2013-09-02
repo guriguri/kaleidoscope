@@ -74,7 +74,7 @@ public class RestServer implements InitializingBean, DisposableBean, Runnable {
 			rm.post(contextPath + "/delete", handler);
 			rm.noMatch(new Handler<HttpServerRequest>() {
 				public void handle(HttpServerRequest req) {
-					RestRequestHandler.requestEnd(req,
+					((RestRequestHandler) handler).requestEnd(req,
 							HttpResponseStatus.NOT_FOUND);
 				}
 			});

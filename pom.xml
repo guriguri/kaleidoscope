@@ -99,6 +99,7 @@
 							<exclude>**/bin/**/*</exclude>
 							<exclude>*.xml</exclude>
 							<exclude>**/html/*.*</exclude>
+							<exclude>**/messages/*.*</exclude>
 							<exclude>**/script/*.*</exclude>
 							<exclude>**/wrapper.conf</exclude>
 						</excludes>

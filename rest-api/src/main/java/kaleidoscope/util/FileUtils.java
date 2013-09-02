@@ -66,7 +66,7 @@ public class FileUtils {
 			ext = "";
 		}
 		else {
-			ext = filename.substring(idx);
+			ext = filename.substring(idx + 1).toLowerCase();
 		}
 
 		return ext;

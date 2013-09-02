@@ -18,14 +18,18 @@ package kaleidoscope.server;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import kaleidoscope.util.FileUtils;
+import kaleidoscope.util.HttpUtils;
 import kaleidoscope.util.JsonUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
@@ -37,15 +41,19 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 	private File HTML_INDEX;
 	private String REGEX_THUMBNAIL_URI;
 
+	private MessageSource messageSource;
+
 	private String rootPath;
 	private String contextPath;
 	private String cmd;
 	private String outfileExt;
+
 	private String defaultResize = "300x300";
 	private int maxUploadFileSize = 10 * 1024 * 1024;
 	private int maxThumbnailCount = 5;
 	private int expireSec = 120;
 	private String readUrl;
+	private Set<String> supportImageFormat = new HashSet<String>();
 
 	public RestRequestHandler() {
 		super();
@@ -61,6 +69,14 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		}
 	}
 
+	public void setMessageSource(MessageSource messageSource) {
+		this.messageSource = messageSource;
+	}
+
+	public String getRootPath() {
+		return rootPath;
+	}
+
 	public void setRootPath(String rootPath) {
 		this.rootPath = rootPath;
 	}
@@ -69,36 +85,73 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		this.contextPath = contextPath;
 	}
 
+	public String getCmd() {
+		return cmd;
+	}
+
 	public void setCmd(String cmd) {
 		this.cmd = cmd;
+	}
+
+	public String getOutfileExt() {
+		return outfileExt;
 	}
 
 	public void setOutfileExt(String outfileExt) {
 		this.outfileExt = outfileExt;
 	}
 
+	public String getDefaultResize() {
+		return defaultResize;
+	}
+
 	public void setDefaultResize(String defaultResize) {
 		this.defaultResize = defaultResize;
+	}
+
+	public int getMaxUploadFileSize() {
+		return maxUploadFileSize;
 	}
 
 	public void setMaxUploadFileSize(int maxUploadFileSize) {
 		this.maxUploadFileSize = maxUploadFileSize;
 	}
 
+	public int getMaxThumbnailCount() {
+		return maxThumbnailCount;
+	}
+
 	public void setMaxThumbnailCount(int maxThumbnailCount) {
 		this.maxThumbnailCount = maxThumbnailCount;
+	}
+
+	public int getExpireSec() {
+		return expireSec;
 	}
 
 	public void setExpireSec(int expireSec) {
 		this.expireSec = expireSec;
 	}
 
+	public String getReadUrl() {
+		return readUrl;
+	}
+
 	public void setReadUrl(String readUrl) {
 		this.readUrl = readUrl;
 	}
 
-	public static void requestEnd(HttpServerRequest req,
-			HttpResponseStatus status, Object obj, boolean isOnlyLog) {
+	public void setSupportImageFormat(String supportImageFormat) {
+		if (StringUtils.isEmpty(supportImageFormat) != true) {
+			String[] imgExt = supportImageFormat.split(",");
+			for (String ext : imgExt) {
+				this.supportImageFormat.add(ext);
+			}
+		}
+	}
+
+	public void requestEnd(HttpServerRequest req, HttpResponseStatus status,
+			Object obj, boolean isOnlyLog) {
 		if (req == null) {
 			log.error("req is null");
 			return;
@@ -117,8 +170,17 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		else if (obj instanceof String) {
 			json = JsonUtils.getJson(statusCode, (String) obj).toString();
 		}
+		else if (obj instanceof Object[]) {
+			Object[] args = (Object[]) obj;
+			String msg = messageSource.getMessage((String) args[0], args,
+					HttpUtils.getLocale(req.headers().get("Accept-Language")));
+			json = JsonUtils.getJson(statusCode, msg).toString();
+		}
 		else if (obj instanceof JsonObject) {
 			json = obj.toString();
+		}
+		else {
+			json = "";
 		}
 
 		if ("get".equals(method) == true) {
@@ -137,22 +199,23 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		if (isOnlyLog != true) {
 			req.response().setStatusCode(statusCode);
 			req.response().setStatusMessage(statusMsg);
+			req.response().putHeader("Access-Control-Allow-Origin", "*");
+
 			req.response().end(json);
 		}
 	}
 
-	public static void requestEnd(HttpServerRequest req,
-			HttpResponseStatus status, Object obj) {
+	public void requestEnd(HttpServerRequest req, HttpResponseStatus status,
+			Object obj) {
 		requestEnd(req, status, obj, false);
 	}
 
-	public static void requestEnd(HttpServerRequest req,
-			HttpResponseStatus status, boolean isOnlyLog) {
+	public void requestEnd(HttpServerRequest req, HttpResponseStatus status,
+			boolean isOnlyLog) {
 		requestEnd(req, status, null, isOnlyLog);
 	}
 
-	public static void requestEnd(HttpServerRequest req,
-			HttpResponseStatus status) {
+	public void requestEnd(HttpServerRequest req, HttpResponseStatus status) {
 		requestEnd(req, status, null);
 	}
 
@@ -165,9 +228,8 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 			if ("post".equals(method) == true) {
 				if (path.endsWith("create") == true) {
 					req.expectMultiPart(true);
-					req.uploadHandler(new UploadHandler(req, rootPath, cmd,
-							outfileExt, defaultResize, maxUploadFileSize,
-							maxThumbnailCount, expireSec, readUrl));
+					req.uploadHandler(new UploadHandler(this, req,
+							supportImageFormat));
 				}
 				else if (path.endsWith("delete") == true) {
 					req.expectMultiPart(true);
@@ -178,12 +240,12 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 							String file = null;
 							if (StringUtils.isEmpty(url) == true) {
 								requestEnd(req, HttpResponseStatus.BAD_REQUEST,
-										"url is empty");
+										new Object[] { "required.param.url" });
 							}
 							else if ((file = url.replaceAll(readUrl, ""))
 									.matches(REGEX_THUMBNAIL_URI) != true) {
 								requestEnd(req, HttpResponseStatus.BAD_REQUEST,
-										"url has invalid chars");
+										new Object[] { "invalid.url.chars" });
 							}
 							else {
 								FileUtils.rmdir(rootPath + "/" + file);

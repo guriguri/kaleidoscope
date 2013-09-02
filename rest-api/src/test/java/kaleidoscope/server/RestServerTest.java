@@ -109,7 +109,7 @@ public class RestServerTest {
 		buffer.appendString("--" + boundary + "\r\n");
 		buffer.appendString("Content-Disposition: form-data; name=\"file\"; filename=\""
 				+ FILENAME + "\"\r\n");
-		buffer.appendString("Content-Type: image/gif\r\n\r\n");
+		buffer.appendString("Content-Type: image/png\r\n\r\n");
 		buffer.appendBytes(content).appendString("\r\n");
 
 		buffer.appendString("--" + boundary + "\r\n");
