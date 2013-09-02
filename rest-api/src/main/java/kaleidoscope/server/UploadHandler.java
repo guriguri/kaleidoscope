@@ -48,7 +48,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 	private String file;
 
 	public UploadHandler(final HttpServerRequest req, final String rootPath,
-			final String cmd, final String outfileExt,
+			final String cmd, final String defaultOutfileExt,
 			final String defaultResize, final int maxUploadFileSize,
 			final int maxThumbnailCount, final int expireSec,
 			final String readUrl) throws URISyntaxException {
@@ -79,6 +79,11 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					if ((resizes == null)
 							|| ((resizes = resizes.trim()).length() == 0)) {
 						resizes = defaultResize;
+					}
+
+					String outfileExt = req.formAttributes().get("outfileExt");
+					if (StringUtils.isEmpty(outfileExt) == true) {
+						outfileExt = defaultOutfileExt;
 					}
 
 					String[] resizeList = resizes.split(",");
@@ -131,10 +136,10 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 			}
 		});
 
-		log.debug("rootPath={}, cmd={}, outfileExt={}, defaultResize={}"
+		log.debug("rootPath={}, cmd={}, defaultOutfileExt={}, defaultResize={}"
 				+ ", maxUploadFileSize={}, maxThumbnailCount={}"
 				+ ", expireSec={}, readUrl={}", new Object[] { rootPath,
-				realCmd, outfileExt, defaultResize, maxUploadFileSize,
+				realCmd, defaultOutfileExt, defaultResize, maxUploadFileSize,
 				maxThumbnailCount, expireSec, readUrl });
 	}
 
