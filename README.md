@@ -33,7 +33,7 @@
 	kaleidoscope.cmd=script/make_thumbnails.sh
 	#kaleidoscope.cmd=script/echo_shell.sh
 	#kaleidoscope.cmd=script/echo_shell.bat
-	kaleidoscope.default.outfile.ext=jpg
+	kaleidoscope.outfile.ext=jpg
 	kaleidoscope.default.resize=300x300
 	kaleidoscope.max.upload.file.size=10485760
 	kaleidoscope.max.thumbnail.count=5
@@ -49,7 +49,7 @@
 | kaleidoscope.read.url             | 썸네일 생성후 조회를 위한 url로 썸네일 생성과 조회 domain 이 다를 경우 유용 |
 | kaleidoscope.root.path            | 썸네일이 생성될 경로                                                        |
 | kaleidoscope.cmd                  | 썸네일 생성을 위한 script 상대경로                                          |
-| kaleidoscope.default.outfile.ext  | default 썸네일 포멧                                                          |
+| kaleidoscope.outfile.ext          | 썸네일 포멧                                                                 |
 | kaleidoscope.default.resize       | default 썸네일 크기                                                         |
 | kaleidoscope.max.upload.file.size | 업로드 파일의 최대 사이즈 (단위: byte)                                      |
 | kaleidoscope.max.thumbnail.count  | 한번에 생성할 수 있는 썸네일의 수                                           |

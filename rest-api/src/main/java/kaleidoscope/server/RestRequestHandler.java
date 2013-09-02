@@ -40,7 +40,7 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 	private String rootPath;
 	private String contextPath;
 	private String cmd;
-	private String defaultOutfileExt;
+	private String outfileExt;
 	private String defaultResize = "300x300";
 	private int maxUploadFileSize = 10 * 1024 * 1024;
 	private int maxThumbnailCount = 5;
@@ -73,8 +73,8 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		this.cmd = cmd;
 	}
 
-	public void setDefaultOutfileExt(String defaultOutfileExt) {
-		this.defaultOutfileExt = defaultOutfileExt;
+	public void setOutfileExt(String outfileExt) {
+		this.outfileExt = outfileExt;
 	}
 
 	public void setDefaultResize(String defaultResize) {
@@ -166,9 +166,8 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 				if (path.endsWith("create") == true) {
 					req.expectMultiPart(true);
 					req.uploadHandler(new UploadHandler(req, rootPath, cmd,
-							defaultOutfileExt, defaultResize,
-							maxUploadFileSize, maxThumbnailCount, expireSec,
-							readUrl));
+							outfileExt, defaultResize, maxUploadFileSize,
+							maxThumbnailCount, expireSec, readUrl));
 				}
 				else if (path.endsWith("delete") == true) {
 					req.expectMultiPart(true);
