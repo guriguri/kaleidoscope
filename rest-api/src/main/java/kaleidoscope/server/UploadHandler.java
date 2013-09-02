@@ -57,7 +57,7 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 		this.handler = handler;
 		this.req = req;
 		this.rootPath = handler.getRootPath();
-		final String outfileExt = handler.getOutfileExt();
+		final String defaultOutfileExt = handler.getDefaultOutfileExt();
 		final String defaultResize = handler.getDefaultResize();
 		final int maxUploadFileSize = handler.getMaxUploadFileSize();
 		final int maxThumbnailCount = handler.getMaxThumbnailCount();
@@ -105,6 +105,10 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 					}
 
 					String outfilePrefix = path + "/" + basename;
+					String outfileExt = req.formAttributes().get("outfileExt");
+					if (StringUtils.isEmpty(outfileExt) == true) {
+						outfileExt = defaultOutfileExt;
+					}
 
 					Runtime runtime = Runtime.getRuntime();
 					String command = realCmd + " " + Paths.get(file) + " "
@@ -144,12 +148,12 @@ public class UploadHandler implements Handler<HttpServerFileUpload> {
 			}
 		});
 
-		log.debug("rootPath={}, cmd={}, outfileExt={}, defaultResize={}"
+		log.debug("rootPath={}, cmd={}, defaultOutfileExt={}, defaultResize={}"
 				+ ", maxUploadFileSize={}, maxThumbnailCount={}"
 				+ ", expireSec={}, readUrl={}, supportImageFormat={}",
-				new Object[] { rootPath, realCmd, outfileExt, defaultResize,
-						maxUploadFileSize, maxThumbnailCount, expireSec,
-						readUrl, supportImageFormat });
+				new Object[] { rootPath, realCmd, defaultOutfileExt,
+						defaultResize, maxUploadFileSize, maxThumbnailCount,
+						expireSec, readUrl, supportImageFormat });
 	}
 
 	@Override

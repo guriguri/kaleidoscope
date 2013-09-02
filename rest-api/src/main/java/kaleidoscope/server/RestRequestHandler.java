@@ -46,7 +46,7 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 	private String rootPath;
 	private String contextPath;
 	private String cmd;
-	private String outfileExt;
+	private String defaultOutfileExt;
 
 	private String defaultResize = "300x300";
 	private int maxUploadFileSize = 10 * 1024 * 1024;
@@ -93,12 +93,12 @@ public class RestRequestHandler implements Handler<HttpServerRequest> {
 		this.cmd = cmd;
 	}
 
-	public String getOutfileExt() {
-		return outfileExt;
+	public String getDefaultOutfileExt() {
+		return defaultOutfileExt;
 	}
 
-	public void setOutfileExt(String outfileExt) {
-		this.outfileExt = outfileExt;
+	public void setDefaultOutfileExt(String defaultOutfileExt) {
+		this.defaultOutfileExt = defaultOutfileExt;
 	}
 
 	public String getDefaultResize() {

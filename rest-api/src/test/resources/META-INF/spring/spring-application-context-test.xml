@@ -31,8 +31,8 @@
 	<bean id="restRequestHandler" class="kaleidoscope.server.RestRequestHandler"
 		p:messageSource-ref="messageSource" p:rootPath="${kaleidoscope.root.path}"
 		p:cmd="${kaleidoscope.cmd}" p:supportImageFormat="${kaleidoscope.support.image.format}"
-		p:outfileExt="${kaleidoscope.outfile.ext}" p:defaultResize="${kaleidoscope.default.resize}"
-		p:maxUploadFileSize="${kaleidoscope.max.upload.file.size}"
+		p:defaultOutfileExt="${kaleidoscope.default.outfile.ext}"
+		p:defaultResize="${kaleidoscope.default.resize}" p:maxUploadFileSize="${kaleidoscope.max.upload.file.size}"
 		p:maxThumbnailCount="${kaleidoscope.max.thumbnail.count}" p:expireSec="${kaleidoscope.expire.sec}"
 		p:contextPath="${kaleidoscope.context.path}" p:readUrl="${kaleidoscope.read.url}" />
 
