@@ -194,6 +194,6 @@
 
 ## Demo
 * Site
-  * [http://guriguri.github.io/Kaleidoscope/](http://guriguri.github.io/Kaleidoscope/] 
+  * [http://guriguri.github.io/Kaleidoscope/](http://guriguri.github.io/Kaleidoscope/)
 * Shell
   * [Python](https://github.com/guriguri/kaleidoscope/blob/master/rest-api/src/main/resources/script/kaleidoscope.py) 
