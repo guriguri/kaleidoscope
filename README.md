@@ -193,4 +193,7 @@
 ```
 
 ## Demo
-* [http://100dream.net:6487](http://100dream.net:6487)
+* Site
+  * [http://guriguri.github.io/Kaleidoscope/](http://guriguri.github.io/Kaleidoscope/] 
+* Shell
+  * [Python](https://github.com/guriguri/kaleidoscope/blob/master/rest-api/src/main/resources/script/kaleidoscope.py) 
