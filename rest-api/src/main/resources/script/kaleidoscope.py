@@ -1,14 +1,17 @@
 #!/usr/bin/python
 """
-usage: kaleidoscope.py file resizes
-   ex) kaleidoscope.py test.jpg 10x10,20x20,30x30
+usage: kaleidoscope.py file resizes [outfileExt]
+   ex) kaleidoscope.py test.jpg 10x10,20x20,30x30 [jpg|png]
 """
 import os, sys, subprocess, json
 
 HOST = "100dream.net:6487"
 URL_CREATE = HOST + "/kaleidoscope/create"
+OUTFILE_EXT = "jpg"
 
-if len(sys.argv) != 3:
+if len(sys.argv) == 4:
+	OUTFILE_EXT = sys.argv[3]
+elif len(sys.argv) != 3:
 	print __doc__
 	raise SystemExit
 
@@ -27,7 +30,10 @@ def getFilePath(file):
 		return file
 
 def create(file, resizes):
-	cmd = "curl -F upload=@" + getFilePath(file) + " -F resizes=" + resizes + " " + URL_CREATE
+	cmd = "curl -F upload=@" + getFilePath(file)
+	cmd += " -F resizes=" + resizes
+	cmd += " -F outfileExt=" + OUTFILE_EXT
+	cmd += " " + URL_CREATE
 	process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
 	return process.communicate()[0]
 
